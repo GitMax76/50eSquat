@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>90s Scratch & RSVP</title>
+    <!-- Carichiamo Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stesso font 90s */
+        @import url('https://fonts.googleapis.com/css2?family=Anton&display.swap');
+        
+        body {
+            font-family: 'Anton', sans-serif;
+            /* Sfondo 90s */
+            background-color: #1a202c;
+            background-image:
+                linear-gradient(45deg, #ec4899 25%, transparent 25%),
+                linear-gradient(-45deg, #ec4899 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #ec4899 75%),
+                linear-gradient(-45deg, transparent 75%, #ec4899 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            text-transform: uppercase;
+        }
+
+        /* Stile Canvas */
+        #scratch-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            cursor: crosshair;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        #base-canvas, #scratch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #scratch-canvas { z-index: 10; }
+
+        /* Stile Titoli */
+        .text-shadow-neon {
+            text-shadow: 
+                0 0 5px #fde047,
+                0 0 10px #fde047,
+                0 0 15px #ec4899;
+        }
+
+        /* Stile per il modal RSVP */
+        #rsvp-modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <!-- Contenitore principale -->
+    <div class="w-full max-w-md bg-gray-800 p-6 md:p-8 rounded-xl shadow-2xl border-4 border-pink-500">
+
+        <!-- 1. VISTA CREATORE (per te, per creare un evento) -->
+        <div id="creator-view">
+            <h1 class="text-4xl md:text-5xl font-bold text-center text-cyan-400 mb-4 text-shadow-neon">
+                Crea Evento 90s
+            </h1>
+            <p class="text-center text-yellow-300 mb-4">Carica la tua foto-invito su un sito (es. <a href="https://imgur.com/upload" target="_blank" class="underline hover:text-cyan-400">Imgur</a>) e incolla il link diretto qui sotto.</p>
+            
+            <div class="space-y-4">
+                <label for="image-url" class="block text-pink-500 font-bold">URL Immagine:</label>
+                <input type="url" id="image-url" placeholder="https://i.imgur.com/..." class="w-full bg-gray-900 text-gray-300 border border-gray-700 rounded-lg p-3 text-sm" style="text-transform: none;">
+                
+                <button id="create-event-btn" class="w-full bg-cyan-400 text-gray-900 font-bold text-2xl p-4 rounded-lg hover:bg-cyan-300 transition-transform transform hover:scale-105">
+                    Genera Link Evento
+                </button>
+            </div>
+            
+            <!-- Qui appariranno i link generati -->
+            <div id="links-container" class="hidden mt-6 space-y-4">
+                <h3 class="text-2xl text-yellow-300 text-center">Evento Creato!</h3>
+                <div>
+                    <label class="block text-pink-500 font-bold">Link da Condividere (Amici):</label>
+                    <input type="text" id="friend-link" readonly class="w-full bg-gray-900 text-gray-400 border border-gray-700 rounded-lg p-3 text-xs">
+                </div>
+                <div>
+                    <label class="block text-cyan-400 font-bold">Link Admin (Tu):</label>
+                    <input type="text" id="admin-link" readonly class="w-full bg-gray-900 text-gray-400 border border-gray-700 rounded-lg p-3 text-xs">
+                </div>
+                <button id="copy-friend-link-btn" class="w-full bg-yellow-300 text-gray-900 font-bold p-3 rounded-lg hover:bg-yellow-400">
+                    Copia Link Amico
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. VISTA AMICO (per i tuoi amici) -->
+        <div id="friend-view" class="hidden">
+            <h2 class="text-3xl md:text-4xl font-bold text-center text-yellow-300 mb-2 text-shadow-neon">
+                Sei invitato!
+            </h2>
+            <p class="text-center text-cyan-400 mb-6">Gratta per scoprire l'invito!</p>
+            
+            <div id="scratch-container" class="border-4 border-yellow-300 rounded-lg mb-6">
+                <canvas id="base-canvas"></canvas>
+                <canvas id="scratch-canvas"></canvas>
+            </div>
+            
+            <button id="rsvp-btn" class="w-full bg-pink-500 text-white font-bold text-2xl p-4 rounded-lg hover:bg-pink-600 transition-transform transform hover:scale-105">
+                Prenotati all'evento!
+            </button>
+            
+            <div id="success-msg" class="hidden text-center mt-6 p-4 bg-green-500 text-gray-900 rounded-lg font-bold text-lg">
+                Grande! La tua prenotazione è confermata. Ci vediamo lì!
+            </div>
+        </div>
+
+        <!-- 3. VISTA ADMIN (per te, per vedere gli RSVP) -->
+        <div id="admin-view" class="hidden">
+            <h2 class="text-3xl md:text-4xl font-bold text-center text-cyan-400 mb-6 text-shadow-neon">
+                Lista Prenotazioni
+            </h2>
+            <div id="rsvp-list-container" class="bg-gray-900 border-2 border-pink-500 rounded-lg p-4 h-64 overflow-y-auto">
+                <!-- La lista degli RSVP verrà caricata qui dal JS -->
+                <p id="no-rsvps-msg" class="text-gray-400 text-center">Nessuna prenotazione ancora...</p>
+                <ul id="rsvp-list" class="space-y-2">
+                    <!-- Es. <li class="text-yellow-300 text-lg">Nome Amico</li> -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- 4. MODAL PER RSVP (nascosto) -->
+        <div id="rsvp-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center p-4 z-50">
+            <div class="bg-gray-800 p-8 rounded-xl shadow-2xl border-4 border-pink-500 w-full max-w-sm">
+                <h3 class="text-3xl text-yellow-300 text-center mb-6 text-shadow-neon">Conferma Presenza</h3>
+                <label for="guest-name" class="block text-pink-500 font-bold mb-2">Il tuo nome:</label>
+                <input type="text" id="guest-name" placeholder="Scrivi il tuo nome..." class="w-full bg-gray-900 text-gray-300 border border-gray-700 rounded-lg p-3 text-sm mb-6" style="text-transform: none;">
+                
+                <button id="submit-rsvp-btn" class="w-full bg-green-500 text-gray-900 font-bold text-2xl p-4 rounded-lg hover:bg-green-400">
+                    Conferma
+                </button>
+                <button id="cancel-rsvp-btn" class="w-full bg-gray-600 text-white font-bold text-lg p-2 rounded-lg hover:bg-gray-500 mt-4">
+                    Annulla
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Importiamo i moduli di Firebase -->
+    <script type="module">
+        // Importa le funzioni di Firebase necessarie
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, setDoc, getDoc, addDoc, collection, doc, onSnapshot, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- VARIABILI GLOBALI ---
+        
+        // Elementi UI
+        const creatorView = document.getElementById('creator-view');
+        const friendView = document.getElementById('friend-view');
+        const adminView = document.getElementById('admin-view');
+        const rsvpModal = document.getElementById('rsvp-modal');
+
+        // Canvas
+        const baseCanvas = document.getElementById('base-canvas');
+        const baseCtx = baseCanvas.getContext('2d');
+        const scratchCanvas = document.getElementById('scratch-canvas');
+        const scratchCtx = scratchCanvas.getContext('2d');
+
+        // Bottoni e Input
+        const createEventBtn = document.getElementById('create-event-btn');
+        const imageUrlInput = document.getElementById('image-url');
+        const linksContainer = document.getElementById('links-container');
+        const friendLinkInput = document.getElementById('friend-link');
+        const adminLinkInput = document.getElementById('admin-link');
+        const copyFriendLinkBtn = document.getElementById('copy-friend-link-btn');
+        const rsvpBtn = document.getElementById('rsvp-btn');
+        const successMsg = document.getElementById('success-msg');
+        const submitRsvpBtn = document.getElementById('submit-rsvp-btn');
+        const cancelRsvpBtn = document.getElementById('cancel-rsvp-btn');
+        const guestNameInput = document.getElementById('guest-name');
+        
+        // Lista RSVP
+        const rsvpList = document.getElementById('rsvp-list');
+        const noRsvpsMsg = document.getElementById('no-rsvps-msg');
+
+        // Variabili di stato
+        let isDrawing = false;
+        let currentEventId = null;
+        let db, auth, userId, appId;
+
+        // --- INIZIALIZZAZIONE FIREBASE ---
+
+        /**
+         * Funzione principale di avvio.
+         */
+        async function main() {
+            // 1. Configurazione Firebase
+            // Queste variabili globali (__app_id, __firebase_config) sono fornite dall'ambiente
+            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                // setLogLevel('debug'); // Rimuovi commento per debug
+                
+                // 2. Autenticazione
+                await authenticateUser();
+
+                // 3. Routing: controlla l'hash nell'URL per decidere cosa mostrare
+                initializeAppLogic();
+
+            } catch (error) {
+                console.error("Errore nell'inizializzazione di Firebase:", error);
+                document.body.innerHTML = "<h1 class='text-red-500 text-center p-8'>Errore di configurazione. Impossibile caricare l'app.</h1>";
+            }
+        }
+
+        /**
+         * Autentica l'utente (tramite token se disponibile, o anonimamente).
+         */
+        async function authenticateUser() {
+            return new Promise((resolve) => {
+                onAuthStateChanged(auth, async (user) => {
+                    if (!user) {
+                        try {
+                            const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                            if (token) {
+                                await signInWithCustomToken(auth, token);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (error) {
+                            console.error("Errore di autenticazione:", error);
+                        }
+                    }
+                    userId = auth.currentUser ? auth.currentUser.uid : 'anonymous-user';
+                    resolve();
+                });
+            });
+        }
+        
+        /**
+         * Logica di routing: decide quale vista mostrare.
+         */
+        function initializeAppLogic() {
+            const hash = window.location.hash;
+
+            if (hash && hash.startsWith('#event=')) {
+                // Modalità AMICO
+                currentEventId = hash.substring(7);
+                setupFriendView();
+            } else if (hash && hash.startsWith('#admin=')) {
+                // Modalità ADMIN
+                currentEventId = hash.substring(7);
+                setupAdminView();
+            } else {
+                // Modalità CREATORE
+                setupCreatorView();
+            }
+        }
+
+        // --- 1. VISTA CREATORE (Crea Evento) ---
+
+        function setupCreatorView() {
+            creatorView.classList.remove('hidden');
+            createEventBtn.addEventListener('click', handleCreateEvent);
+        }
+
+        async function handleCreateEvent() {
+            const imageUrl = imageUrlInput.value;
+            if (!imageUrl || !imageUrl.startsWith('http')) {
+                alert("Per favore, inserisci un URL valido (che inizi con http).");
+                return;
+            }
+
+            // Genera un ID unico per l'evento
+            const eventId = crypto.randomUUID().split('-')[0]; // Un ID più corto
+            createEventBtn.disabled = true;
+            createEventBtn.textContent = "Creazione...";
+
+            try {
+                // Salva l'evento nel database
+                // Path: artifacts/{appId}/public/data/events/{eventId}
+                const eventRef = doc(db, "artifacts", appId, "public", "data", "events", eventId);
+                await setDoc(eventRef, {
+                    imageUrl: imageUrl,
+                    creatorId: userId,
+                    createdAt: serverTimestamp()
+                });
+
+                // Mostra i link
+                let baseUrl = window.location.href.split('#')[0];
+
+                // --- INIZIO CORREZIONE ---
+                // Se l'URL è un 'blob:' (tipico degli ambienti di anteprima), 
+                // usiamo un URL segnaposto per far capire come funzionerà 
+                // e aggiungiamo una nota su come testare.
+                if (baseUrl.startsWith('blob:')) {
+                    baseUrl = "https://la-tua-app.com/scratch_card.html";
+                    
+                    // Aggiungi un messaggio di aiuto solo se non esiste già
+                    const existingHelpText = linksContainer.querySelector('.help-text-preview');
+                    if (!existingHelpText) {
+                        const helpText = document.createElement('p');
+                        helpText.className = "help-text-preview text-xs text-center text-gray-400 mt-2";
+                        helpText.style.textTransform = 'none'; // Rimuovi maiuscolo
+                        helpText.innerHTML = "<b>Nota:</b> L'URL qui sopra è un <b class='text-yellow-300'>segnaposto</b>. Per testare, copia solo la parte <b class='text-pink-500'>#event=...</b> e incollala alla fine dell'URL in questa stessa scheda, poi ricarica la pagina.";
+                        linksContainer.appendChild(helpText);
+                    }
+                }
+                // --- FINE CORREZIONE ---
+
+                friendLinkInput.value = `${baseUrl}#event=${eventId}`;
+                adminLinkInput.value = `${baseUrl}#admin=${eventId}`;
+                linksContainer.classList.remove('hidden');
+
+                // Abilita pulsante copia
+                copyFriendLinkBtn.addEventListener('click', () => {
+                    friendLinkInput.select();
+                    document.execCommand('copy');
+                    copyFriendLinkBtn.textContent = 'Copiato!';
+                });
+
+            } catch (error) {
+                console.error("Errore nella creazione dell'evento:", error);
+                alert("Errore nella creazione dell'evento. Riprova.");
+                createEventBtn.disabled = false;
+                createEventBtn.textContent = "Genera Link Evento";
+            }
+        }
+        
+        // --- 2. VISTA AMICO (Gratta e Prenota) ---
+
+        async function setupFriendView() {
+            friendView.classList.remove('hidden');
+
+            try {
+                // Recupera i dati dell'evento dal DB
+                const eventRef = doc(db, "artifacts", appId, "public", "data", "events", currentEventId);
+                const eventSnap = await getDoc(eventRef);
+
+                if (!eventSnap.exists()) {
+                    friendView.innerHTML = "<h1 class='text-red-500 text-center'>Evento non trovato.</h1>";
+                    return;
+                }
+
+                const eventData = eventSnap.data();
+                const imageUrl = eventData.imageUrl;
+
+                // Imposta dimensioni canvas
+                const container = document.getElementById('scratch-container');
+                const size = container.clientWidth;
+                baseCanvas.width = size;
+                baseCanvas.height = size;
+                scratchCanvas.width = size;
+                scratchCanvas.height = size;
+                
+                // Carica l'immagine (da URL)
+                const img = new Image();
+                img.crossOrigin = "Anonymous"; // Necessario se l'immagine è su un altro dominio
+                img.onload = () => {
+                    baseCtx.drawImage(img, 0, 0, size, size);
+                    drawScratchLayer();
+                };
+                img.onerror = () => {
+                    console.error("Errore caricamento immagine. L'URL è corretto? Serve un link diretto.");
+                    baseCtx.fillStyle = 'black';
+                    baseCtx.fillRect(0,0,size,size);
+                    baseCtx.fillStyle = 'red';
+                    baseCtx.font = "16px Arial";
+                    baseCtx.textAlign = 'center';
+                    baseCtx.fillText("Immagine non caricata", size/2, size/2);
+                    drawScratchLayer(); // Disegna comunque lo strato
+                }
+                img.src = imageUrl;
+
+                // Aggiungi listener per grattare
+                setupScratchListeners();
+
+                // Listener per pulsante RSVP
+                rsvpBtn.addEventListener('click', () => rsvpModal.classList.remove('hidden'));
+                cancelRsvpBtn.addEventListener('click', () => rsvpModal.classList.add('hidden'));
+                submitRsvpBtn.addEventListener('click', handleSubmitRsvp);
+
+            } catch (error) {
+                console.error("Errore nel recupero dell'evento:", error);
+                friendView.innerHTML = "<h1 class='text-red-500 text-center'>Errore nel caricamento dell'evento.</h1>";
+            }
+        }
+
+        async function handleSubmitRsvp() {
+            const guestName = guestNameInput.value;
+            if (!guestName) {
+                alert("Per favore, inserisci il tuo nome.");
+                return;
+            }
+
+            submitRsvpBtn.disabled = true;
+            submitRsvpBtn.textContent = "Salvataggio...";
+
+            try {
+                // Salva il nome nel database
+                // Path: artifacts/{appId}/public/data/events/{eventId}/rsvps
+                const rsvpsCollection = collection(db, "artifacts", appId, "public", "data", "events", currentEventId, "rsvps");
+                await addDoc(rsvpsCollection, {
+                    name: guestName,
+                    timestamp: serverTimestamp()
+                });
+                
+                // Mostra successo
+                rsvpModal.classList.add('hidden');
+                rsvpBtn.classList.add('hidden');
+                document.getElementById('scratch-container').classList.add('hidden');
+                successMsg.classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Errore nel salvataggio RSVP:", error);
+                alert("Errore durante la prenotazione. Riprova.");
+                submitRsvpBtn.disabled = false;
+                submitRsvpBtn.textContent = "Conferma";
+            }
+        }
+
+        // --- 3. VISTA ADMIN (Vedi Prenotazioni) ---
+        
+        function setupAdminView() {
+            adminView.classList.remove('hidden');
+
+            // Mettiti in ascolto per nuovi RSVP in tempo reale
+            const rsvpsCollection = collection(db, "artifacts", appId, "public", "data", "events", currentEventId, "rsvps");
+            
+            onSnapshot(rsvpsCollection, (querySnapshot) => {
+                if (querySnapshot.empty) {
+                    rsvpList.innerHTML = ''; // Pulisci la lista
+                    noRsvpsMsg.classList.remove('hidden');
+                } else {
+                    noRsvpsMsg.classList.add('hidden');
+                    rsvpList.innerHTML = ''; // Pulisci prima di ridisegnare
+                    
+                    // Ordina i documenti per timestamp lato client
+                    const rsvps = querySnapshot.docs.map(doc => doc.data());
+                    rsvps.sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0));
+
+                    rsvps.forEach((data) => {
+                        const li = document.createElement('li');
+                        li.className = 'text-yellow-300 text-lg p-2 bg-gray-700 rounded';
+                        li.textContent = data.name;
+                        rsvpList.appendChild(li);
+                    });
+                }
+            }, (error) => {
+                console.error("Errore nell'ascolto degli RSVP:", error);
+                rsvpList.innerHTML = '<li class="text-red-500">Errore nel caricare la lista.</li>';
+            });
+        }
+
+        // --- FUNZIONI DI UTILITÀ (Scratch Card) ---
+
+        function drawScratchLayer() {
+            const size = scratchCanvas.width;
+            scratchCtx.fillStyle = '#ec4899';
+            scratchCtx.fillRect(0, 0, size, size);
+            scratchCtx.fillStyle = '#fde047';
+            scratchCtx.font = `bold ${size * 0.1}px Anton`;
+            scratchCtx.textAlign = 'center';
+            scratchCtx.textBaseline = 'middle';
+            scratchCtx.fillText('GRATTA QUI!', size / 2, size / 2);
+        }
+        
+        function setupScratchListeners() {
+            scratchCanvas.addEventListener('mousedown', startScratch);
+            scratchCanvas.addEventListener('mouseup', stopScratch);
+            scratchCanvas.addEventListener('mouseleave', stopScratch);
+            scratchCanvas.addEventListener('mousemove', scratch);
+            scratchCanvas.addEventListener('touchstart', startScratch, { passive: true });
+            scratchCanvas.addEventListener('touchend', stopScratch);
+            scratchCanvas.addEventListener('touchmove', scratch, { passive: true });
+        }
+
+        function startScratch(e) {
+            isDrawing = true;
+            scratch(e);
+        }
+
+        function stopScratch() {
+            isDrawing = false;
+        }
+
+        function scratch(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const rect = scratchCanvas.getBoundingClientRect();
+            let x, y;
+            if (e.touches && e.touches[0]) {
+                x = e.touches[0].clientX - rect.left;
+                y = e.touches[0].clientY - rect.top;
+            } else {
+                x = e.clientX - rect.left;
+                y = e.clientY - rect.top;
+            }
+            scratchCtx.globalCompositeOperation = 'destination-out';
+            scratchCtx.beginPath();
+            scratchCtx.arc(x * (scratchCanvas.width / rect.width), y * (scratchCanvas.height / rect.height), 20, 0, Math.PI * 2, false); // Scalato per canvas responsive
+            scratchCtx.fill();
+        }
+
+        // --- AVVIO APP ---
+        document.addEventListener('DOMContentLoaded', main);
+
+    </script>
+</body>
+</html>
+
+
+
+
