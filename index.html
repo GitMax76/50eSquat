@@ -115,26 +115,20 @@
             }
             // --- FINE FIX ---
             
-            // --- FIX PER RACE CONDITION LAYOUT ---
-            // Usiamo setTimeout(..., 100) per spostare l'esecuzione
-            // al prossimo "tick" dell'evento. Questo dà al browser
-            // il tempo di calcolare il layout CSS (es. aspect-ratio)
-            // dopo l'evento 'load', prima che noi misuriamo il contenitore.
-            setTimeout(async () => {
-                try {
-                    // Imposta la scratch card
-                    await setupScratchCard(imageUrl);
-                    console.log("Scratch card pronta!");
+            // Non usiamo più un setTimeout fisso qui
+            try {
+                // Imposta la scratch card
+                await setupScratchCard(imageUrl);
+                console.log("Scratch card pronta!");
 
-                } catch (error) {
-                    console.error("Errore nel caricamento della scratch card: ", error);
-                    // In caso di errore, mostra un messaggio
-                    const container = document.getElementById('scratch-container');
-                    if (container) {
-                        container.innerHTML = `<h1 class='text-red-500 text-center p-4'>Errore nel caricamento dell'immagine. Assicurati che il file '50eSquat.png' sia nel repository.</h1>`;
-                    }
+            } catch (error) {
+                console.error("Errore nel caricamento della scratch card: ", error);
+                // In caso di errore, mostra un messaggio
+                const container = document.getElementById('scratch-container');
+                if (container) {
+                    container.innerHTML = `<h1 class='text-red-500 text-center p-4'>Errore nel caricamento dell'immagine. Assicurati che il file '50eSquat.png' sia nel repository.</h1>`;
                 }
-            }, 100); // Esegui dopo 100ms
+            }
         }
 
         // --- LOGICA SCRATCH CARD ---
@@ -163,8 +157,6 @@
                     img.crossOrigin = "Anonymous";
                 }
                 
-                img.src = imageUrl;
-                
                 img.onload = () => {
                     // Imposta dimensioni canvas
                     let w = container.clientWidth;
@@ -183,7 +175,7 @@
                     
                     // Aggiungi un controllo per dimensioni non valide
                     if (w === 0 || h === 0) {
-                        console.error(`Dimensioni contenitore non valide: w=${w}, h=${h}`);
+                        console.error(`Dimensioni contenitore non valide AL CARICAMENTO: w=${w}, h=${h}`);
                         reject("Dimensioni contenitore non valide");
                         return;
                     }
@@ -241,6 +233,27 @@
                         console.error("Errore nel mostrare l'errore sul canvas:", e);
                     }
                 };
+
+                // --- NUOVA LOGICA DI POLLING ---
+                // Funzione che controlla le dimensioni del contenitore
+                // prima di caricare l'immagine.
+                function checkDimensionsAndLoad() {
+                    const w = container.clientWidth;
+                    if (w === 0) {
+                        // Se la larghezza è 0, il layout non è pronto.
+                        // Riprova tra 50ms.
+                        console.warn("Layout non pronto (w=0). Riprovo tra 50ms...");
+                        setTimeout(checkDimensionsAndLoad, 50);
+                    } else {
+                        // La larghezza è > 0, il layout è pronto.
+                        // Ora possiamo caricare l'immagine.
+                        console.log(`Layout pronto (w=${w}). Carico l'immagine.`);
+                        img.src = imageUrl;
+                    }
+                }
+
+                // Avvia il controllo delle dimensioni
+                checkDimensionsAndLoad();
             });
         }
 
