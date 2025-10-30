@@ -1,0 +1,330 @@
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>90s Scratch & RSVP</title>
+    <!-- Carichiamo Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stesso font 90s */
+        @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+        
+        body {
+            font-family: 'Anton', sans-serif;
+            /* Sfondo 90s */
+            background-color: #1a202c;
+            background-image:
+                linear-gradient(45deg, #ec4899 25%, transparent 25%),
+                linear-gradient(-45deg, #ec4899 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #ec4899 75%),
+                linear-gradient(-45deg, transparent 75%, #ec4899 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            text-transform: uppercase;
+        }
+
+        /* Stile Canvas */
+        #scratch-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            cursor: crosshair;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        #base-canvas, #scratch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #scratch-canvas { z-index: 10; }
+
+        /* Stile Titoli */
+        .text-shadow-neon {
+            text-shadow: 
+                0 0 5px #fde047,
+                0 0 10px #fde047,
+                0 0 15px #ec4899;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <!-- Contenitore principale -->
+    <div class="w-full max-w-md bg-gray-800 p-6 md:p-8 rounded-xl shadow-2xl border-4 border-pink-500">
+
+        <!-- 1. VISTA SCRATCH CARD -->
+        <div>
+            <h2 class="text-3xl md:text-4xl font-bold text-center text-yellow-300 mb-2 text-shadow-neon">
+                Sei invitato!
+            </h2>
+            <!-- AGGIUNTO ID "invite-subtitle" per poterlo modificare -->
+            <p id="invite-subtitle" class="text-center text-cyan-400 mb-6">Gratta per scoprire l'invito!</p>
+            
+            <div id="scratch-container" class="border-4 border-yellow-300 rounded-lg mb-6">
+                <canvas id="base-canvas"></canvas>
+                <canvas id="scratch-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- 2. VISTA RSVP (Google Form) -->
+        <div id="rsvp-form-view" class="mt-8">
+            <h2 class="text-3xl md:text-4xl font-bold text-center text-cyan-400 mb-6 text-shadow-neon">
+                Conferma Presenza
+            </h2>
+            <p class="text-center text-yellow-300 mb-4">Compila il form qui sotto per prenotarti!</p>
+            
+            <div class="w-full h-[600px] rounded-lg overflow-hidden border-4 border-yellow-300">
+                <iframe 
+                    src="https://forms.gle/3kSBkdmRpgBHufpW7" 
+                    width="100%" 
+                    height="100%" 
+                    frameborder="0" 
+                    marginheight="0" 
+                    marginwidth="0">
+                    Caricamento…
+                </iframe>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Script Aggiornato -->
+    <script type="module">
+        
+        // --- FUNZIONE PRINCIPALE DI AVVIO ---
+        
+        async function initializeApp() {
+            let imageUrl = "50eSquat.png"; 
+
+            // --- NUOVO: Controlla la disponibilità posti ---
+            checkAvailability();
+            // --- FINE NUOVO ---
+            
+            if (window.location.href.startsWith('blob:')) {
+                console.warn("Rilevato ambiente di anteprima. Uso un'immagine placeholder.");
+                imageUrl = "https://placehold.co/400x400/ec4899/fde047?text=Placeholder+Immagine";
+            }
+            
+            try {
+                // Aspettiamo che il layout sia pronto prima di caricare
+                const { w, h } = await waitForValidDimensions();
+                await setupScratchCard(imageUrl, w, h);
+                console.log("Scratch card pronta!");
+
+            } catch (error) {
+                console.error("Errore nel caricamento della scratch card: ", error);
+                const container = document.getElementById('scratch-container');
+                if (container) {
+                    container.innerHTML = `<h1 class='text-red-500 text-center p-4'>${error}</h1>`;
+                }
+            }
+        }
+
+        // --- NUOVA FUNZIONE PER CONTROLLO DISPONIBILITÀ ---
+        
+        /**
+         * Chiama l'API di Google Apps Script per ottenere il conteggio
+         * degli iscritti e aggiorna l'interfaccia.
+         */
+        async function checkAvailability() {
+            // --- MODIFICA ---
+            // Ho incollato il tuo URL!
+            const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbysjqEMKUdF8MOJRKB18jCN2-FVjltQWjd5ZqqTwIZhfbZGLugJhDgddxv920UDvbfEtw/exec"; 
+            
+            // Imposta le soglie
+            const WARNING_THRESHOLD = 17; // Mostra avviso giallo a 17
+            const MAX_CAPACITY = 20;      // Mostra "completo" a 20 (o più)
+
+            try {
+                const response = await fetch(WEB_APP_URL);
+                if (!response.ok) {
+                    throw new Error('Risposta API non valida: ' + response.statusText);
+                }
+                
+                const data = await response.json();
+                
+                if (data.status === 'error') {
+                    throw new Error('Errore API Apps Script: ' + data.message);
+                }
+
+                const count = data.count || 0;
+                console.log("Iscritti attuali:", count);
+                
+                const subtitle = document.getElementById('invite-subtitle');
+                if (!subtitle) return;
+
+                // Aggiorna il testo in base al conteggio
+                if (count >= MAX_CAPACITY) {
+                    subtitle.innerHTML = "EVENTO COMPLETO!";
+                    subtitle.className = "text-center text-red-500 text-2xl mb-6";
+                } else if (count >= WARNING_THRESHOLD) {
+                    subtitle.innerHTML = "ATTENZIONE: ULTIMI POSTI DISPONIBILI!";
+                    subtitle.className = "text-center text-yellow-300 text-2xl mb-6 animate-pulse";
+                }
+
+            } catch (error) {
+                console.error("Errore nel controllare la disponibilità:", error);
+                // Non bloccare l'app se l'API fallisce, mostra solo un errore in console
+            }
+        }
+        
+        // --- NUOVA LOGICA DI CONTROLLO DIMENSIONI ---
+        
+        /**
+         * Attende che il contenitore abbia dimensioni valide (non 0x0).
+         * Utilizza un "polling" per ricontrollare.
+         */
+        function waitForValidDimensions() {
+            const container = document.getElementById('scratch-container');
+            
+            return new Promise((resolve, reject) => {
+                let attempts = 0;
+                const maxAttempts = 50; // Max 2.5 secondi (50 * 50ms)
+
+                function check() {
+                    let w = container.clientWidth;
+                    let h = container.clientHeight;
+
+                    // Se w > 0 e h è 0, prova a dedurlo dall'aspect ratio 1:1
+                    if (w > 0 && h === 0 && (container.style.aspectRatio === '1 / 1' || getComputedStyle(container).aspectRatio === '1 / 1')) {
+                         h = w; 
+                    }
+
+                    if (w > 0 && h > 0) {
+                        console.log(`Dimensioni valide trovate: w=${w}, h=${h}`);
+                        resolve({ w, h });
+                    } else {
+                        attempts++;
+                        if (attempts > maxAttempts) {
+                            console.error(`Timeout dimensioni: w=${w}, h=${h}`);
+                            reject("Dimensioni contenitore non valide dopo timeout");
+                        } else {
+                            // Riprova dopo un breve ritardo
+                            setTimeout(check, 50); 
+                        }
+                    }
+                }
+                check(); // Avvia il primo controllo
+            });
+        }
+
+
+        // --- LOGICA SCRATCH CARD ---
+
+        /**
+         * Imposta i due canvas per la scratch card.
+         * Ora riceve w e h come parametri.
+         */
+        function setupScratchCard(imageUrl, w, h) {
+            return new Promise((resolve, reject) => {
+                const baseCanvas = document.getElementById('base-canvas');
+                const scratchCanvas = document.getElementById('scratch-canvas');
+                
+                if (!baseCanvas || !scratchCanvas) {
+                    reject("Elementi canvas non trovati");
+                    return;
+                }
+                
+                const ctxBase = baseCanvas.getContext('2d');
+                const ctxScratch = scratchCanvas.getContext('2d');
+
+                const img = new Image();
+                
+                // Necessario se l'immagine è caricata da un dominio diverso (es. placeholder)
+                if (imageUrl.startsWith('http')) {
+                    img.crossOrigin = "Anonymous";
+                }
+                
+                img.onload = () => {
+                    baseCanvas.width = w;
+                    baseCanvas.height = h;
+                    scratchCanvas.width = w;
+                    scratchCanvas.height = h;
+
+                    // 1. Disegna l'immagine di sfondo
+                    ctxBase.drawImage(img, 0, 0, w, h);
+                    
+                    // 2. Disegna lo strato da grattare
+                    ctxScratch.fillStyle = '#ec4899'; // Rosa 90s
+                    ctxScratch.fillRect(0, 0, w, h);
+                    ctxScratch.font = 'bold 30px Anton';
+                    ctxScratch.fillStyle = '#fde047'; // Giallo 90s
+                    ctxScratch.textAlign = 'center';
+                    ctxScratch.textBaseline = 'middle';
+                    ctxScratch.fillText('GRATTA QUI!', w / 2, h / 2);
+
+                    // 3. Imposta la logica per "grattare"
+                    setupGrabbing(scratchCanvas, ctxScratch);
+                    resolve();
+                };
+
+                img.onerror = () => {
+                    console.error("Errore caricamento immagine. Controlla che '50eSquat.png' sia nella root del repo.");
+                    reject("Errore caricamento immagine '50eSquat.png'");
+                };
+
+                img.src = imageUrl;
+            });
+        }
+
+        /**
+         * Gestisce l'evento di "grattata" (mouse e tocco).
+         */
+        function setupGrabbing(canvas, ctx) {
+            let isDrawing = false;
+
+            function scratch(e) {
+                if (!isDrawing) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+
+                let x, y;
+                if (e.touches) {
+                    if(e.touches.length > 0) {
+                        x = (e.touches[0].clientX - rect.left) * scaleX;
+                        y = (e.touches[0].clientY - rect.top) * scaleY;
+                    } else {
+                        return; // Nessun tocco rilevato
+                    }
+                } else {
+                    x = (e.clientX - rect.left) * scaleX;
+                    y = (e.clientY - rect.top) * scaleY;
+                }
+
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath();
+                ctx.arc(x, y, 20, 0, Math.PI * 2, false);
+                ctx.fill();
+            }
+
+            // Eventi Mouse
+            canvas.addEventListener('mousedown', () => isDrawing = true);
+            canvas.addEventListener('mouseup', () => isDrawing = false);
+            canvas.addEventListener('mouseleave', () => isDrawing = false);
+            canvas.addEventListener('mousemove', scratch);
+
+            // Eventi Touch
+            canvas.addEventListener('touchstart', (e) => {
+                isDrawing = true;
+                scratch(e); // Gratta subito al tocco
+            });
+            canvas.addEventListener('touchend', () => isDrawing = false);
+            canvas.addEventListener('touchcancel', () => isDrawing = false);
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault(); // Impedisce lo scroll della pagina
+                scratch(e);
+D            });
+        }
+
+        // --- AVVIO DELL'APPLICAZIONE ---
+        // 'load' attende che *tutto* sia caricato (CSS, layout, ecc.)
+        window.addEventListener('load', initializeApp);
+
+    </script>
+</body>
+</html>
