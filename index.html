@@ -191,6 +191,10 @@
                 return;
             }
             
+            // --- INIZIO LOGGING AGGIUNTIVO ---
+            console.log("Tentativo di chiamata API a:", WEB_APP_URL);
+            // --- FINE LOGGING AGGIUNTIVO ---
+            
             try {
                 // *** QUESTA È LA CORREZIONE FONDAMENTALE ***
                 // Torniamo a GET, ma aggiungiamo un parametro "cache-buster" 
@@ -201,6 +205,8 @@
                 url.searchParams.append('action', 'check'); // Aggiunge ?action=check
                 url.searchParams.append('v', new Date().getTime()); // Aggiunge &v=123456789
 
+                console.log("Chiamata GET a:", url.href); // Log URL completo
+
                 const response = await fetch(url, { 
                     method: 'GET', // <-- TORNATO A GET
                     redirect: 'follow',
@@ -208,9 +214,15 @@
                 });
                 // *** FINE MODIFICA ***
                 
+                // --- INIZIO LOGGING AGGIUNTIVO ---
+                console.log("Stato risposta API:", response.status, response.statusText);
                 if (!response.ok) {
-                    throw new Error(`Risposta API non OK: ${response.status} ${response.statusText}`);
+                    // Logghiamo il testo della risposta se non è OK
+                    const errorText = await response.text();
+                    console.error("Risposta API non OK (testo):", errorText);
+                    throw new Error(`Risposta API non OK: ${response.status} ${errorText}`);
                 }
+                // --- FINE LOGGING AGGIUNTIVO ---
                 
                 const result = await response.json();
                 console.log("Stato disponibilità:", result);
@@ -235,7 +247,14 @@
                     throw new Error(result.message || "Errore API sconosciuto");
                 }
             } catch (error) {
-                console.error("Errore nel controllare la disponibilità:", error);
+                // --- INIZIO LOGGING AGGIUNTIVO CATCH ---
+                console.error("--- ERRORE DETTAGLIATO CHECKAVAILABILITY ---");
+                console.error("Messaggio:", error.message);
+                console.error("Nome Errore:", error.name); // es. TypeError
+                console.error("Stack Trace:", error.stack);
+                console.error("--- FINE ERRORE DETTAGLIATO ---");
+                // --- FINE LOGGING AGGIUNTIVO CATCH ---
+                
                 statusMessage.textContent = "Impossibile verificare i posti. Riprova.";
                 statusMessage.classList.add("text-red-500");
             }
@@ -396,7 +415,11 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`Risposta API non OK: ${response.status} ${response.statusText}`);
+                    // --- INIZIO LOGGING AGGIUNTIVO ---
+                    const errorText = await response.text();
+                    console.error("Risposta API (POST) non OK (testo):", errorText);
+                    throw new Error(`Risposta API (POST) non OK: ${response.status} ${errorText}`);
+                    // --- FINE LOGGING AGGIUNTIVO ---
                 }
                 
                 const result = await response.json();
@@ -416,7 +439,13 @@
                 }
                 
             } catch (error) {
-                console.error("Errore nell'invio della prenotazione:", error);
+                // --- INIZIO LOGGING AGGIUNTIVO CATCH ---
+                console.error("--- ERRORE DETTAGLIATO HANDLERSVPSUBMIT ---");
+                console.error("Messaggio:", error.message);
+                console.error("Nome Errore:", error.name);
+                console.error("--- FINE ERRORE DETTAGLIATO ---");
+                // --- FINE LOGGING AGGIUNTIVO CATCH ---
+                
                 statusMessage.textContent = "Errore nell'invio. Riprova.";
                 statusMessage.classList.remove("text-yellow-300");
                 statusMessage.classList.add("text-red-500");
