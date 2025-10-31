@@ -176,20 +176,25 @@
         const nameInput = document.getElementById("name");
 
         /**
-         * 1. Controlla la disponibilità usando JSONP per evitare CORS
+         * 1. Controlla la disponibilità con POST JSON (come da Apps Script)
          */
         async function checkAvailability() {
             console.log("Controllo disponibilità...");
             
             try {
-                // CORREZIONE PRINCIPALE: Usiamo JSONP invece di fetch per evitare CORS
-                const response = await fetchWithJsonp(WEB_APP_URL + '?action=check&v=' + Date.now());
+                // Usa POST con JSON come configurato nel tuo Apps Script
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'check' })
+                });
                 
-                console.log("Risposta API:", response);
+                const result = await response.json();
+                console.log("Risposta API:", result);
 
-                if (response.status === "success") {
-                    const count = response.count || 0;
-                    const availability = response.availability;
+                if (result.status === "success") {
+                    const count = result.count || 0;
+                    const availability = result.availability;
                     
                     if (availability === "full" || count >= MAX_PARTICIPANTS) {
                         statusMessage.textContent = "ATTENZIONE: EVENTO COMPLETO!";
@@ -208,7 +213,7 @@
                         rsvpContainer.classList.remove("hidden");
                     }
                 } else {
-                    throw new Error(response.message || "Errore API sconosciuto");
+                    throw new Error(result.message || "Errore API sconosciuto");
                 }
             } catch (error) {
                 console.error("Errore nel controllo disponibilità:", error);
@@ -218,48 +223,6 @@
                 // Mostriamo comunque il container come fallback
                 rsvpContainer.classList.remove("hidden");
             }
-        }
-
-        /**
-         * Funzione JSONP per bypassare CORS con Google Apps Script
-         */
-        function fetchWithJsonp(url, timeout = 10000) {
-            return new Promise((resolve, reject) => {
-                const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
-                
-                window[callbackName] = function(data) {
-                    delete window[callbackName];
-                    if (script.parentNode) {
-                        document.body.removeChild(script);
-                    }
-                    resolve(data);
-                };
-
-                const script = document.createElement('script');
-                script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
-                script.crossOrigin = 'anonymous';
-                
-                script.onerror = function() {
-                    delete window[callbackName];
-                    if (script.parentNode) {
-                        document.body.removeChild(script);
-                    }
-                    reject(new Error('Errore JSONP'));
-                };
-                
-                // Timeout
-                setTimeout(() => {
-                    if (window[callbackName]) {
-                        delete window[callbackName];
-                        if (script.parentNode) {
-                            document.body.removeChild(script);
-                        }
-                        reject(new Error('Timeout JSONP'));
-                    }
-                }, timeout);
-                
-                document.body.appendChild(script);
-            });
         }
 
         /**
@@ -392,28 +355,17 @@
             submitBtn.textContent = "Invio...";
             
             try {
-                // Usa FormData per il POST (come negli esempi GitHub trovati)
-                const formData = new FormData();
-                formData.append('name', name);
-                formData.append('timestamp', new Date().toISOString());
-                
+                // Usa POST con JSON come configurato nel tuo Apps Script
                 const response = await fetch(WEB_APP_URL, {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
                 });
                 
-                // Google Apps Script risponde con redirect, quindi controlliamo il contenuto
-                const text = await response.text();
-                let result;
+                const result = await response.json();
+                console.log("Risultato invio:", result);
                 
-                try {
-                    result = JSON.parse(text);
-                } catch {
-                    // Se non è JSON, probabilmente è andato a buon fine comunque
-                    result = { status: "success", name: name };
-                }
-                
-                if (result.status === "success" || response.ok) {
+                if (result.status === "success") {
                     console.log("Nome inviato:", name);
                     rsvpContainer.classList.add("hidden");
                     statusMessage.classList.add("hidden");
