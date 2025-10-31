@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="it" class="h-full">
 <head>
     <meta charset="UTF-8">
@@ -169,7 +170,7 @@
         const submitBtn = document.getElementById("submit-btn");
 
         /**
-         * 1. Controlla la disponibilità (POST)
+         * 1. Controlla la disponibilità (GET con Cache-Buster)
          * Chiama l'API per sapere quanti posti sono rimasti
          */
         async function checkAvailability() {
@@ -192,15 +193,20 @@
             
             try {
                 // *** QUESTA È LA CORREZIONE FONDAMENTALE ***
-                // Usiamo POST (invece di GET) per aggirare i problemi di redirect/CORS di Google.
-                // L'API (Versione 5) si aspetta questa chiamata.
-                const response = await fetch(WEB_APP_URL, { 
-                    method: 'POST', // <-- CAMBIATO DA GET A POST
+                // Torniamo a GET, ma aggiungiamo un parametro "cache-buster" 
+                // (v=timestamp) per forzare Google a non usare la cache e 
+                // prevenire i problemi di redirect/CORS.
+                
+                const url = new URL(WEB_APP_URL);
+                url.searchParams.append('action', 'check'); // Aggiunge ?action=check
+                url.searchParams.append('v', new Date().getTime()); // Aggiunge &v=123456789
+
+                const response = await fetch(url, { 
+                    method: 'GET', // <-- TORNATO A GET
                     redirect: 'follow',
-                    cache: 'no-store', // Forza un controllo nuovo ogni volta
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'check' }) // <-- Aggiunto corpo
+                    cache: 'no-store' // Doppia sicurezza
                 });
+                // *** FINE MODIFICA ***
                 
                 if (!response.ok) {
                     throw new Error(`Risposta API non OK: ${response.status} ${response.statusText}`);
@@ -243,13 +249,23 @@
                 image.onload = () => {
                     console.log("Immagine caricata, avvio canvas...");
                     
-                    const w = container.clientWidth;
-                    const h = container.clientHeight;
+                    let w = container.clientWidth; // <-- CAMBIATO IN LET
+                    let h = container.clientHeight; // <-- CAMBIATO IN LET
                     
+                    // --- INIZIO CORREZIONE PER ANTEPRIMA ---
                     if (w === 0 || h === 0) {
-                        console.error("Dimensioni contenitore non valide:", w, h);
-                        return reject(new Error("Dimensioni contenitore non valide"));
+                        if (window.location.protocol === "blob:") {
+                            // Se le dimensioni sono ancora 0 in preview, usiamo un valore fittizio.
+                            console.warn("Dimensioni 0x0 in preview, uso 500x500 fittizio.");
+                            w = 500; // Valore fittizio per l'anteprima
+                            h = 500; // Valore fittizio per l'anteprima
+                        } else {
+                            // In modalità live, questo è un errore reale.
+                            console.error("Dimensioni contenitore non valide:", w, h);
+                            return reject(new Error("Dimensioni contenitore non valide"));
+                        }
                     }
+                    // --- FINE CORREZIONE PER ANTEPRIMA ---
 
                     canvas = document.getElementById("scratch-canvas");
                     canvas.width = w;
@@ -371,11 +387,12 @@
             }
             
             try {
+                // Il POST per l'invio del nome va bene e non crea problemi
                 const response = await fetch(WEB_APP_URL, {
                     method: 'POST',
                     redirect: 'follow',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: name }) // Invia il nome (diverso da 'action: check')
+                    body: JSON.stringify({ name: name }) // Invia il nome
                 });
                 
                 if (!response.ok) {
@@ -428,9 +445,22 @@
             
             // Prova a caricare lo scratch card, riprovando se le dimensioni non sono pronte
             try {
-                await retryUntilSized(initializeScratchCard, imageUrl);
+                // --- INIZIO CORREZIONE PER ANTEPRIMA ---
+                if (window.location.protocol === "blob:") {
+                    // In preview, il calcolo del layout non è affidabile e causa timeout.
+                    // Bypassiamo il "retry" e proviamo a inizializzare direttamente.
+                    // Aggiungiamo un piccolo delay per dare al browser il tempo di respirare.
+                    console.warn("Modalità anteprima: Bypasso il retryUntilSized.");
+                    await new Promise(res => setTimeout(res, 100)); // Breve attesa
+                    await initializeScratchCard(imageUrl);
+                } else {
+                    // --- GITHUB (LIVE) MODE ---
+                    // Usa la logica di retry robusta per il sito live
+                    await retryUntilSized(initializeScratchCard, imageUrl);
+                }
+                // --- FINE CORREZIONE PER ANTEPRIMA ---
                 
-                // Solo dopo che la card è pronta, controlliamo la disponibilità
+                 // Solo dopo che la card è pronta, controlliamo la disponibilità
                 await checkAvailability();
                 
                 // Collega l'evento al form
