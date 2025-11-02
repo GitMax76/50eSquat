@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="it" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>50&Squat - Gratta e Vinci!</title>
+    <!-- Carica Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stile 90s Fitness */
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Teko', sans-serif;
+            background-color: #0c0a09; /* stone-950 */
+            color: #f0f0f0;
+            background-image:
+                linear-gradient(rgba(13, 165, 234, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(13, 165, 234, 0.3) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        
+        .card {
+            background-color: #1c1917; /* stone-900 */
+            border: 4px solid #a5f3fc; /* cyan-200 */
+            box-shadow: 0 0 20px #a5f3fc, 0 0 30px #a5f3fc inset;
+            border-radius: 1rem;
+        }
+
+        .btn-neon {
+            font-weight: 700;
+            letter-spacing: 2px;
+            background-color: #ec4899; /* pink-500 */
+            color: #ffffff;
+            border: 2px solid #f9a8d4; /* pink-200 */
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px #ec4899, 0 0 15px #ec4899;
+        }
+        .btn-neon:hover {
+            background-color: #f9a8d4;
+            color: #be185d;
+            box-shadow: 0 0 20px #f9a8d4, 0 0 30px #f9a8d4;
+        }
+        
+        .btn-neon:disabled {
+            background-color: #52525b; /* zinc-600 */
+            color: #a1a1aa; /* zinc-400 */
+            border-color: #71717a; /* zinc-500 */
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        input[type="text"] {
+            background-color: #262626; /* neutral-800 */
+            border: 2px solid #a5f3fc; /* cyan-200 */
+            color: #f0f0f0;
+            border-radius: 0.5rem;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            box-shadow: 0 0 10px #a5f3fc;
+        }
+        
+        h1 {
+            font-size: 4rem;
+            line-height: 1;
+            font-weight: 700;
+            text-shadow: 0 0 10px #ec4899, 0 0 20px #ec4899;
+        }
+
+        #scratch-card-container {
+            position: relative;
+            width: 100%;
+            /* Mantiene il contenitore responsive con proporzioni 1:1 (quadrato) */
+            aspect-ratio: 1 / 1;
+            cursor: crosshair;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 2px solid #a5f3fc;
+        }
+        
+        #scratch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+        
+        #image-underneath {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="h-full flex items-center justify-center p-4">
+
+    <main class="w-full max-w-lg">
+        <div class="card p-6 md:p-10">
+            
+            <h1 class="text-center text-pink-400 mb-4">50&Squat</h1>
+            <p id="invite-subtitle" class="text-center text-cyan-400 mb-6 text-2xl">Gratta per scoprire l'invito!</p>
+
+            <!-- CONTENITORE DELLO SCRATCH CARD -->
+            <div id="scratch-card-container" class="mb-6">
+                <!-- Il canvas "grattabile" -->
+                <canvas id="scratch-canvas"></canvas>
+                <!-- L'immagine sottostante -->
+                <img id="image-underneath" src="" alt="Invito all'evento" class="hidden" />
+            </div>
+            
+            <!-- SEZIONE DI PRENOTAZIONE -->
+            <div id="rsvp-section" class="text-center">
+                <!-- Messaggio di stato (es. "pochi posti") -->
+                <p id="status-message" class="text-xl text-cyan-400 mb-4 font-bold">Caricamento disponibilità...</p>
+
+                <!-- Campo nome e pulsante (senza form) -->
+                <div id="rsvp-container" class="hidden">
+                    <input type="text" id="name" name="name" placeholder="Inserisci il tuo nome" class="w-full max-w-xs p-3 text-lg text-center mx-auto block mb-4" autocomplete="name" required />
+                    <button id="submit-btn" class="btn-neon">
+                        Ci Sarò!
+                    </button>
+                </div>
+
+                <!-- Messaggio di successo (nascosto) -->
+                <div id="success-message" class="hidden text-center text-green-400 text-2xl p-4 border-2 border-green-400 rounded-lg">
+                    <p>Ottimo! La tua prenotazione è confermata.</p>
+                    <p>Ci vediamo all'evento!</p>
+   	 	    <p class="mt-4">
+                        <a href="https://calendar.google.com/calendar/event?action=TEMPLATE&tmeid=Mms0NHU4cWliMGk5NzFsM2pqNWYyaTBjN3EgbWFzc2kuc2FiYXRvQG0&tmsrc=massi.sabato%40gmail.com" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:text-cyan-300 underline text-lg font-bold">
+                            Clicca qui per aggiungere l'evento al tuo calendario!
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // --- CONFIGURAZIONE ---
+        
+        // !!! URL DELLA TUA APP WEB (DA GOOGLE APPS SCRIPT) !!!
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby1-k5hZ2nxnbTwKc-9OX6c4Z8epG6uxl0gWM3IdFQY9aDP014ztrOtH_HdhD_MSBVJEQ/exec"; 
+        
+        // Il nome della tua immagine nel repository GitHub
+        const IMAGE_NAME = "50eSquat.png";
+        
+        // Limite massimo di partecipanti
+        const MAX_PARTICIPANTS = 20;
+        
+        // Soglia per l'avviso "pochi posti" (quando >= 18)
+        const WARNING_THRESHOLD = 18;
+        
+        // --- FINE CONFIGURAZIONE ---
+
+        let canvas, ctx;
+        let isDrawing = false;
+        let isAppReady = false;
+
+        // URL dell'immagine (costruito dinamicamente o placeholder)
+        let imageUrl;
+
+        // Oggetti del DOM
+        const container = document.getElementById("scratch-card-container");
+        const image = document.getElementById("image-underneath");
+        const rsvpSection = document.getElementById("rsvp-section");
+        const rsvpContainer = document.getElementById("rsvp-container");
+        const statusMessage = document.getElementById("status-message");
+        const successMessage = document.getElementById("success-message");
+        const submitBtn = document.getElementById("submit-btn");
+        const nameInput = document.getElementById("name");
+
+        /**
+         * 1. Controlla la disponibilità con POST JSON
+         */
+        async function checkAvailability() {
+            console.log("Controllo disponibilità...");
+            
+            try {
+                // Aggiungi cache-buster per evitare problemi di cache
+                const params = new URLSearchParams({ 
+                    action: 'check',
+                    _t: new Date().getTime()
+                });
+                
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: params
+                });
+                
+                const result = await response.json();
+                console.log("Risposta API check:", result);
+
+                if (result.status === "success") {
+                    const count = result.count || 0;
+                    const availability = result.availability;
+                    
+                    console.log("Count:", count, "Availability:", availability);
+                    
+                    if (availability === "full" || count >= MAX_PARTICIPANTS) {
+                        statusMessage.textContent = "ATTENZIONE: EVENTO COMPLETO!";
+                        statusMessage.classList.remove("text-cyan-400", "text-yellow-300", "animate-pulse");
+                        statusMessage.classList.add("text-red-500");
+                        rsvpContainer.classList.add("hidden");
+                    } else if (count >= WARNING_THRESHOLD) {
+                        // Mostra sempre "pochi posti" se >= 18, senza numeri
+                        statusMessage.textContent = "⚠️ ANCORA POCHI POSTI DISPONIBILI! ⚠️";
+                        statusMessage.classList.remove("text-cyan-400", "text-red-500");
+                        statusMessage.classList.add("text-yellow-300", "animate-pulse");
+                        rsvpContainer.classList.remove("hidden");
+                    } else {
+                        statusMessage.textContent = "Conferma la tua presenza!";
+                        statusMessage.classList.remove("text-yellow-300", "text-red-500", "animate-pulse");
+                        statusMessage.classList.add("text-cyan-400");
+                        rsvpContainer.classList.remove("hidden");
+                    }
+                } else {
+                    throw new Error(result.message || "Errore API sconosciuto");
+                }
+            } catch (error) {
+                console.error("Errore nel controllo disponibilità:", error);
+                // Mostriamo il form comunque con messaggio generico
+                statusMessage.textContent = "Conferma la tua presenza!";
+                statusMessage.classList.remove("text-yellow-300", "text-red-500");
+                statusMessage.classList.add("text-cyan-400");
+                rsvpContainer.classList.remove("hidden");
+            }
+        }
+
+        /**
+         * 2. Inizializza lo Scratch Card
+         */
+        function initializeScratchCard(imageUrl) {
+            return new Promise((resolve, reject) => {
+                image.onload = () => {
+                    console.log("Immagine caricata, avvio canvas...");
+                    
+                    let w = container.clientWidth;
+                    let h = container.clientHeight;
+                    
+                    if (w === 0 || h === 0) {
+                        console.error("Dimensioni contenitore non valide:", w, h);
+                        return reject(new Error("Dimensioni contenitore non valide"));
+                    }
+
+                    canvas = document.getElementById("scratch-canvas");
+                    canvas.width = w;
+                    canvas.height = h;
+                    ctx = canvas.getContext("2d");
+
+                    // Disegna lo strato grattabile (rosa neon)
+                    ctx.fillStyle = "#ec4899";
+                    ctx.fillRect(0, 0, w, h);
+
+                    // Imposta la composizione per "cancellare"
+                    ctx.globalCompositeOperation = "destination-out";
+                    ctx.lineWidth = Math.max(w, h) * 0.1;
+                    ctx.lineCap = "round";
+
+                    // Aggiungi gli event listener
+                    canvas.addEventListener("mousedown", startDrawing);
+                    canvas.addEventListener("mouseup", stopDrawing);
+                    canvas.addEventListener("mousemove", draw);
+                    
+                    canvas.addEventListener("touchstart", startDrawingTouch, { passive: false });
+                    canvas.addEventListener("touchend", stopDrawing, { passive: false });
+                    canvas.addEventListener("touchmove", drawTouch, { passive: false });
+
+                    image.classList.remove("hidden");
+                    isAppReady = true;
+                    resolve();
+                };
+                
+                image.onerror = () => {
+                    console.error("Errore caricamento immagine.");
+                    reject(new Error("Errore caricamento immagine"));
+                };
+                
+                image.src = imageUrl;
+            });
+        }
+        
+        // --- Funzioni di disegno ---
+
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (e.clientX - rect.left) * (canvas.width / rect.width),
+                y: (e.clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+        
+        function getTouchPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            return {
+                x: (touch.clientX - rect.left) * (canvas.width / rect.width),
+                y: (touch.clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+
+        function startDrawing(e) {
+            if (!isAppReady) return;
+            isDrawing = true;
+            const pos = getMousePos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+        
+        function startDrawingTouch(e) {
+            if (!isAppReady) return;
+            e.preventDefault();
+            isDrawing = true;
+            const pos = getTouchPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function stopDrawing() {
+            if (!isAppReady) return;
+            isDrawing = false;
+            ctx.closePath();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getMousePos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+        
+        function drawTouch(e) {
+            if (!isAppReady) return;
+            e.preventDefault();
+            if (!isDrawing) return;
+            const pos = getTouchPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+        
+        /**
+         * 3. Gestisce l'invio diretto al Google Sheet
+         */
+        async function handleRsvpSubmit() {
+            if (!isAppReady) return;
+
+            const name = nameInput.value.trim();
+
+            if (name === "") {
+                statusMessage.textContent = "Per favore, inserisci un nome.";
+                statusMessage.classList.remove("text-cyan-400", "text-yellow-300");
+                statusMessage.classList.add("text-red-500");
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Invio...";
+            
+            try {
+                // Aggiungi cache-buster
+                const params = new URLSearchParams({ 
+                    name: name,
+                    _t: new Date().getTime()
+                });
+                
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: params
+                });
+                
+                // Log della risposta grezza per debug
+                const responseText = await response.text();
+                console.log("Risposta API (testo grezzo):", responseText);
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error("Errore parsing JSON:", parseError);
+                    throw new Error("Risposta non valida dal server");
+                }
+                
+                console.log("Risposta API submit (parsed):", result);
+                
+                if (result.status === "success") {
+                    console.log("✅ Nome inviato con successo:", name);
+                    rsvpContainer.classList.add("hidden");
+                    statusMessage.classList.add("hidden");
+                    successMessage.classList.remove("hidden");
+                } else {
+                    console.error("❌ Errore API:", result.message);
+                    statusMessage.textContent = result.message || "Errore nell'invio";
+                    statusMessage.classList.remove("text-cyan-400", "text-yellow-300");
+                    statusMessage.classList.add("text-red-500");
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Ci Sarò!";
+                }
+                
+            } catch (error) {
+                console.error("Errore invio form:", error);
+                statusMessage.textContent = "Errore nell'invio. Riprova.";
+                statusMessage.classList.remove("text-cyan-400", "text-yellow-300");
+                statusMessage.classList.add("text-red-500");
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Ci Sarò!";
+            }
+        }
+        
+        /**
+         * Funzione di avvio principale
+         */
+        async function initializeApp() {
+            // Determina l'URL dell'immagine
+            const path = window.location.pathname;
+            const baseUrl = path.endsWith('/') ? path.slice(0, -1) : path.substring(0, path.lastIndexOf('/'));
+            imageUrl = window.location.origin + baseUrl + '/' + IMAGE_NAME;
+            console.log("URL immagine:", imageUrl);
+            
+            try {
+                // Inizializza lo scratch card con retry
+                await retryUntilSized(initializeScratchCard, imageUrl);
+                
+                // Controlla la disponibilità dopo che il canvas è pronto
+                await checkAvailability();
+                
+                // Collega l'evento al pulsante
+                submitBtn.addEventListener("click", handleRsvpSubmit);
+                
+            } catch (error) {
+                console.error("Errore nell'inizializzazione:", error);
+                document.getElementById("invite-subtitle").textContent = "Errore nel caricamento. Ricarica la pagina.";
+                document.getElementById("invite-subtitle").classList.add("text-red-500");
+            }
+        }
+
+        /**
+         * Utility per ritentare finché il contenitore non ha dimensioni > 0
+         */
+        function retryUntilSized(callback, ...args) {
+            return new Promise((resolve, reject) => {
+                let attempts = 0;
+                const maxAttempts = 20;
+
+                function attempt() {
+                    const w = container.clientWidth;
+                    const h = container.clientHeight;
+
+                    if (w > 0 && h > 0) {
+                        console.log(`Dimensioni ottenute: ${w}x${h}`);
+                        callback(...args).then(resolve).catch(reject);
+                    } else if (attempts < maxAttempts) {
+                        attempts++;
+                        console.log(`Tentativo ${attempts}: dimensioni 0x0, riprovo...`);
+                        setTimeout(attempt, 100);
+                    } else {
+                        reject(new Error("Timeout: Impossibile ottenere le dimensioni."));
+                    }
+                }
+                attempt();
+            });
+        }
+        
+        // Avvia l'app dopo che il DOM è pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+
+    </script>
+</body>
+</html>
