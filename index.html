@@ -151,7 +151,7 @@
         const IMAGE_NAME = "50eSquat.png";
         
         // Limite massimo di partecipanti
-        const MAX_PARTICIPANTS = 30;
+        const MAX_PARTICIPANTS = 20;
         
         // Soglia per l'avviso "pochi posti" (quando >= 18)
         const WARNING_THRESHOLD = 18;
@@ -176,39 +176,49 @@
         const nameInput = document.getElementById("name");
 
         /**
-         * 1. Controlla la disponibilità con POST JSON (come da Apps Script)
+         * 1. Controlla la disponibilità con POST JSON
          */
         async function checkAvailability() {
             console.log("Controllo disponibilità...");
             
             try {
-                // Usa POST con JSON come configurato nel tuo Apps Script
+                // Aggiungi cache-buster per evitare problemi di cache
+                const params = new URLSearchParams({ 
+                    action: 'check',
+                    _t: new Date().getTime()
+                });
+                
                 const response = await fetch(WEB_APP_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'check' })
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: params
                 });
                 
                 const result = await response.json();
-                console.log("Risposta API:", result);
+                console.log("Risposta API check:", result);
 
                 if (result.status === "success") {
                     const count = result.count || 0;
                     const availability = result.availability;
                     
+                    console.log("Count:", count, "Availability:", availability);
+                    
                     if (availability === "full" || count >= MAX_PARTICIPANTS) {
                         statusMessage.textContent = "ATTENZIONE: EVENTO COMPLETO!";
-                        statusMessage.classList.remove("text-cyan-400", "text-yellow-300");
+                        statusMessage.classList.remove("text-cyan-400", "text-yellow-300", "animate-pulse");
                         statusMessage.classList.add("text-red-500");
                         rsvpContainer.classList.add("hidden");
-                    } else if (availability === "warning" || count >= WARNING_THRESHOLD) {
-                        statusMessage.textContent = `⚠️ ANCORA POCHI POSTI DISPONIBILI! ⚠️`;
-                        statusMessage.classList.remove("text-cyan-400");
+                    } else if (count >= WARNING_THRESHOLD) {
+                        // Mostra sempre "pochi posti" se >= 18, senza numeri
+                        statusMessage.textContent = "⚠️ ANCORA POCHI POSTI DISPONIBILI! ⚠️";
+                        statusMessage.classList.remove("text-cyan-400", "text-red-500");
                         statusMessage.classList.add("text-yellow-300", "animate-pulse");
                         rsvpContainer.classList.remove("hidden");
                     } else {
-                        statusMessage.textContent = `Conferma la tua presenza!`;
-                        statusMessage.classList.remove("text-yellow-300");
+                        statusMessage.textContent = "Conferma la tua presenza!";
+                        statusMessage.classList.remove("text-yellow-300", "text-red-500", "animate-pulse");
                         statusMessage.classList.add("text-cyan-400");
                         rsvpContainer.classList.remove("hidden");
                     }
@@ -217,10 +227,10 @@
                 }
             } catch (error) {
                 console.error("Errore nel controllo disponibilità:", error);
-                statusMessage.textContent = "Impossibile verificare i posti. Riprova più tardi.";
-                statusMessage.classList.remove("text-cyan-400", "text-yellow-300");
-                statusMessage.classList.add("text-red-500");
-                // Mostriamo comunque il container come fallback
+                // Mostriamo il form comunque con messaggio generico
+                statusMessage.textContent = "Conferma la tua presenza!";
+                statusMessage.classList.remove("text-yellow-300", "text-red-500");
+                statusMessage.classList.add("text-cyan-400");
                 rsvpContainer.classList.remove("hidden");
             }
         }
@@ -355,22 +365,41 @@
             submitBtn.textContent = "Invio...";
             
             try {
-                // Usa POST con JSON come configurato nel tuo Apps Script
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: name })
+                // Aggiungi cache-buster
+                const params = new URLSearchParams({ 
+                    name: name,
+                    _t: new Date().getTime()
                 });
                 
-                const result = await response.json();
-                console.log("Risultato invio:", result);
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: params
+                });
+                
+                // Log della risposta grezza per debug
+                const responseText = await response.text();
+                console.log("Risposta API (testo grezzo):", responseText);
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error("Errore parsing JSON:", parseError);
+                    throw new Error("Risposta non valida dal server");
+                }
+                
+                console.log("Risposta API submit (parsed):", result);
                 
                 if (result.status === "success") {
-                    console.log("Nome inviato:", name);
+                    console.log("✅ Nome inviato con successo:", name);
                     rsvpContainer.classList.add("hidden");
                     statusMessage.classList.add("hidden");
                     successMessage.classList.remove("hidden");
                 } else {
+                    console.error("❌ Errore API:", result.message);
                     statusMessage.textContent = result.message || "Errore nell'invio";
                     statusMessage.classList.remove("text-cyan-400", "text-yellow-300");
                     statusMessage.classList.add("text-red-500");
