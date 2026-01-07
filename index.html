@@ -385,7 +385,7 @@
         // --- CONFIGURAZIONE ---
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwpzqVqnci_gIxMOdJf6Ckf6lmnGI1Bxh9k1WYaXqop4DoFOY6ohZ4tLk8zREholj8PDA/exec";
 
-        // --- CLASSE SCRATCH CARD (EVENTO 1) ---
+        // --- CLASSE SCRATCH CARD ---
         class ScratchCard {
             constructor(containerId, canvasId, imgId, imgSrc, onProgress) {
                 this.container = document.getElementById(containerId);
@@ -457,7 +457,7 @@
                 if (!this.hasStarted) {
                     this.container.classList.add("scratched");
                     this.hasStarted = true;
-                    tryPlayAudio(); // Tenta di avviare l'audio al primo tocco
+                    tryPlayAudio();
                 }
                 const pos = this.getPos(e, isTouch);
                 this.ctx.beginPath();
@@ -478,7 +478,6 @@
                 const pos = this.getPos(e, isTouch);
                 this.ctx.lineTo(pos.x, pos.y);
                 this.ctx.stroke();
-
                 if (Date.now() - this.lastCalc > 200) {
                     this.calcProgress();
                     this.lastCalc = Date.now();
@@ -500,202 +499,6 @@
                     this.percent = Math.round((transparent / total) * 100);
                     this.onProgress(this.percent);
                 } catch (e) { console.error(e); }
-            }
-        }
-
-        // --- CLASSE SLIDING PUZZLE (EVENTO 2) ---
-        class SlidingPuzzle {
-            constructor(containerId, imgSrc, onComplete) {
-                this.container = document.getElementById(containerId);
-                this.imgSrc = imgSrc;
-                this.onComplete = onComplete;
-                this.tiles = [];
-                this.emptyIndex = 8; // L'ultimo slot è vuoto (3x3 grid: indici 0-8)
-                this.size = 3; // 3x3
-                this.isSolved = false;
-
-                // Pulisce il container originale
-                this.container.innerHTML = "";
-                this.container.classList.add("grid", "grid-cols-3", "gap-1", "bg-black", "border-2", "border-pink-500", "p-1");
-                this.container.style.aspectRatio = "1/1";
-                this.container.style.cursor = "pointer";
-
-                this.init();
-            }
-
-            init() {
-                // Creiamo le tessere
-                for (let i = 0; i < 9; i++) {
-                    const tile = document.createElement("div");
-                    tile.classList.add("relative", "w-full", "h-full", "overflow-hidden", "transition-transform", "duration-200");
-                    if (i < 8) {
-                        tile.style.backgroundImage = `url('${this.imgSrc}')`;
-                        tile.style.backgroundSize = "300% 300%";
-                        // Calcola posizione background
-                        const col = i % 3;
-                        const row = Math.floor(i / 3);
-                        tile.style.backgroundPosition = `${col * 50}% ${row * 50}%`;
-                        tile.setAttribute("data-index", i); // Indice corretto (SOLUZIONE)
-                    } else {
-                        // Tessera vuota
-                        tile.classList.add("bg-gray-900");
-                        tile.setAttribute("data-empty", "true");
-                    }
-
-                    // Click event
-                    tile.addEventListener("click", () => this.moveTile(i));
-                    // Mobile Touch
-                    tile.addEventListener("touchstart", (e) => { e.preventDefault(); this.moveTile(this.tiles.indexOf(tile)); tryPlayAudio(); });
-
-                    this.tiles.push(tile);
-                    this.container.appendChild(tile);
-                }
-
-                // Mescoliamo le tessere
-                this.shuffle();
-
-                // Timer per bottone "Cheat"
-                setTimeout(() => this.showCheatButton(), 15000); // 15 secondi
-            }
-
-            shuffle() {
-                // Simuliamo mosse casuali valide per garantire risolvibilità
-                for (let i = 0; i < 100; i++) {
-                    const neighbors = this.getNeighbors(this.emptyIndex);
-                    const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
-                    this.swap(randomNeighbor, this.emptyIndex, false);
-                }
-                this.checkWin(false); // Aggiorna UI senza triggerare vittoria
-            }
-
-            getNeighbors(index) {
-                const row = Math.floor(index / 3);
-                const col = index % 3;
-                const neighbors = [];
-
-                if (row > 0) neighbors.push(index - 3); // Sopra
-                if (row < 2) neighbors.push(index + 3); // Sotto
-                if (col > 0) neighbors.push(index - 1); // Sinistra
-                if (col < 2) neighbors.push(index + 1); // Destra
-
-                return neighbors;
-            }
-
-            moveTile(clickIndex) {
-                if (this.isSolved) return;
-
-                // Trova indice attuale del tile cliccato (perché l'array tiles è mescolato visivamente nel DOM? No, array resta fisso, cambiamo contenuto? Meglio scambiare nodi o stili)
-                // Metodo DOM order: usiamo array 'tiles' come stato logico delle posizioni. 
-                // tiles[0] è il tile in posizione (0,0), tiles[1] in (0,1)...
-
-                const neighbors = this.getNeighbors(this.emptyIndex);
-                if (neighbors.includes(clickIndex)) {
-                    this.swap(clickIndex, this.emptyIndex, true);
-                    this.checkWin(true);
-                }
-            }
-
-            swap(idx1, idx2, animate) {
-                // Scambia nel DOM e nell'array logico
-                const tile1 = this.tiles[idx1];
-                const tile2 = this.tiles[idx2];
-
-                // Scambio Stili (Background) e Attributi
-                const bg1 = tile1.style.backgroundImage;
-                const pos1 = tile1.style.backgroundPosition;
-                const empty1 = tile1.hasAttribute("data-empty");
-                const index1 = tile1.getAttribute("data-index");
-
-                const bg2 = tile2.style.backgroundImage;
-                const pos2 = tile2.style.backgroundPosition;
-                const empty2 = tile2.hasAttribute("data-empty");
-                const index2 = tile2.getAttribute("data-index");
-
-                tile1.style.backgroundImage = bg2;
-                tile1.style.backgroundPosition = pos2;
-                if (empty2) { tile1.setAttribute("data-empty", "true"); tile1.classList.add("bg-gray-900"); }
-                else { tile1.removeAttribute("data-empty"); tile1.classList.remove("bg-gray-900"); }
-                if (index2) tile1.setAttribute("data-index", index2); else tile1.removeAttribute("data-index");
-
-                tile2.style.backgroundImage = bg1;
-                tile2.style.backgroundPosition = pos1;
-                if (empty1) { tile2.setAttribute("data-empty", "true"); tile2.classList.add("bg-gray-900"); }
-                else { tile2.removeAttribute("data-empty"); tile2.classList.remove("bg-gray-900"); }
-                if (index1) tile2.setAttribute("data-index", index1); else tile2.removeAttribute("data-index");
-
-                // Aggiorna indice vuoto
-                this.emptyIndex = idx1;
-            }
-
-            checkWin(updateUI) {
-                let correct = 0;
-                this.tiles.forEach((tile, i) => {
-                    const targetIndex = tile.getAttribute("data-index");
-                    // Se siamo all'ultima casella (8) deve essere vuota
-                    if (i === 8) {
-                        if (tile.hasAttribute("data-empty")) correct++;
-                    } else {
-                        if (targetIndex == i) correct++;
-                    }
-                });
-
-                // Calcolo percentuale "vicinanza" (approx)
-                let pct = Math.round((correct / 9) * 100);
-                // Se è risolto
-                if (correct === 9) {
-                    this.isSolved = true;
-                    pct = 100;
-                    this.completeAnimation();
-                }
-
-                if (updateUI && this.onComplete) this.onComplete(pct);
-            }
-
-            completeAnimation() {
-                // Mostra immagine completa nell'ultimo slot
-                const lastTile = this.tiles[8];
-                lastTile.classList.remove("bg-gray-900");
-                lastTile.style.backgroundImage = `url('${this.imgSrc}')`;
-                lastTile.style.backgroundSize = "300% 300%";
-                lastTile.style.backgroundPosition = "100% 100%";
-
-                this.container.classList.add("border-green-400", "shadow-[0_0_20px_#4ade80]");
-            }
-
-            autoSolve() {
-                // Trucco: riordina tutto istantaneamente
-                this.tiles.forEach((tile, i) => {
-                    if (i < 8) {
-                        tile.style.backgroundImage = `url('${this.imgSrc}')`;
-                        tile.style.backgroundPosition = `${(i % 3) * 50}% ${Math.floor(i / 3) * 50}%`;
-                        tile.setAttribute("data-index", i);
-                        tile.removeAttribute("data-empty");
-                        tile.classList.remove("bg-gray-900");
-                    } else {
-                        tile.style.backgroundImage = "";
-                        tile.setAttribute("data-empty", "true");
-                        tile.classList.add("bg-gray-900");
-                    }
-                });
-                this.emptyIndex = 8;
-                this.checkWin(true);
-            }
-
-            showCheatButton() {
-                if (!this.isSolved) {
-                    const btn = document.createElement("button");
-                    btn.textContent = "💡 RISOLVI SUBITO";
-                    btn.className = "absolute top-2 right-2 bg-yellow-500 text-black font-bold p-2 rounded text-xs shadow-lg animate-bounce z-20";
-                    btn.onclick = (e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        this.autoSolve();
-                        btn.remove();
-                    };
-                    // Append al genitore del container per posizionamento relativo
-                    this.container.parentElement.style.position = "relative";
-                    this.container.parentElement.appendChild(btn);
-                }
             }
         }
 
@@ -728,11 +531,8 @@
             isPlaying: false
         };
 
-        // ... updateFormVisibility & checkAvailability restano uguali (omessi per brevità se non modificati, 
-        // ma siccome sto rimpiazzando tutto il blocco script, devo rimetterli!) ...
-
         function updateFormVisibility() {
-            const isScratched = state.scratch1 > 60 && state.scratch2 >= 99; // Puzzle deve essere 100% (o quasi)
+            const isScratched = state.scratch1 > 60 && state.scratch2 > 60;
             const hasSpots = state.availability && (state.availability.event1 !== "full" || state.availability.event2 !== "full");
 
             if (state.serverReady && hasSpots) {
@@ -741,7 +541,7 @@
                     ui.globalStatus.classList.add("hidden");
                 } else {
                     ui.form.classList.add("hidden");
-                    ui.globalStatus.textContent = "COMPLETA I GIOCHI PER PRENOTARTI!";
+                    ui.globalStatus.textContent = "GRATTA ENTRAMBI I RIQUADRI PER PRENOTARTI!";
                     ui.globalStatus.classList.replace("text-red-500", "text-cyan-400");
                     ui.globalStatus.classList.remove("hidden");
                 }
@@ -771,14 +571,13 @@
             } catch (e) {
                 console.error(e);
                 ui.globalStatus.textContent = "Offline (Demo Mode)";
-                // Simulazione per test locale
                 state.serverReady = true;
                 state.availability = { event1: "open", event2: "open" };
                 updateFormVisibility();
             }
         }
 
-        // --- AUDIO FIX (AUTOPLAY MOBILE) ---
+        // --- AUDIO FIXED ---
         let scWidget;
         function tryPlayAudio() {
             if (!state.isPlaying && scWidget) {
@@ -809,7 +608,6 @@
             }
         }
 
-        // --- SUBMIT RSVP (Copia/Incolla della logica precedente) ---
         async function submitRSVP() {
             ui.error.classList.add("hidden");
             const name = ui.name.value.trim();
@@ -819,11 +617,12 @@
             if (!name) { ui.error.textContent = "INSERISCI IL TUO NOME!"; ui.error.classList.remove("hidden"); return; }
             if (!ev1 && !ev2) { ui.error.textContent = "SELEZIONA UN EVENTO!"; ui.error.classList.remove("hidden"); return; }
 
+            ui.btn.disabled = true; ui.btn.textContent = "INVIO...";
+
             const events = [];
             if (ev1) events.push("event1");
             if (ev2) events.push("event2");
 
-            ui.btn.disabled = true; ui.btn.textContent = "INVIO...";
             try {
                 const res = await fetch(WEB_APP_URL, {
                     method: 'POST',
@@ -834,6 +633,7 @@
                 if (data.status === "success") {
                     ui.form.classList.add("hidden");
                     ui.success.classList.remove("hidden");
+                    ui.globalStatus.classList.add("hidden");
                 } else throw new Error(data.message);
             } catch (e) {
                 ui.error.textContent = "ERRORE: " + e.message;
@@ -851,21 +651,21 @@
             const updateBar = (bar, text, p) => {
                 bar.style.width = `${p}%`;
                 text.textContent = `${p}%`;
-                if (p >= 99) { // Puzzle richiede 100% (o quasi)
+                if (p >= 60) {
                     bar.classList.replace("bg-pink-500", "bg-green-500");
                     text.classList.replace("text-cyan-400", "text-green-400");
                 }
             };
 
-            // CARD 1: Scratch (Classico)
+            // Card 1
             new ScratchCard("container-1", "canvas-1", "img-1", `${origin}${baseUrl}/50eSquat.png`, (p) => {
                 state.scratch1 = p;
                 updateBar(ui.bar1, ui.text1, p);
                 updateFormVisibility();
             });
 
-            // CARD 2: Puzzle (Sliding) - Sostituisce il vecchio ScratchCard
-            new SlidingPuzzle("container-2", `${origin}${baseUrl}/level50.png`, (p) => {
+            // Card 2
+            new ScratchCard("container-2", "canvas-2", "img-2", `${origin}${baseUrl}/level50.png`, (p) => {
                 state.scratch2 = p;
                 updateBar(ui.bar2, ui.text2, p);
                 updateFormVisibility();
@@ -875,7 +675,7 @@
             checkAvailability();
             initAudio();
 
-            // Mobile Audio Unlock globale
+            // Unlock audio mobile
             document.body.addEventListener('touchstart', tryPlayAudio, { once: true });
             document.body.addEventListener('click', tryPlayAudio, { once: true });
         }
