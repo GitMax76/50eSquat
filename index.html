@@ -319,13 +319,42 @@
                 class="text-lg text-yellow-300 mt-4 hidden font-bold border border-yellow-300 p-2 rounded"></p>
 
             <!-- Success -->
-            <div id="success-msg" class="hidden">
-                <p class="text-3xl text-green-400 mb-2">Fantastico!</p>
-                <p class="text-xl text-gray-200 mb-6">La tua prenotazione è stata registrata.</p>
-                <a href="https://calendar.app.google/8vUrVBoVDBMzLfbz6" target="_blank"
-                    class="text-cyan-400 underline text-lg">
-                    Aggiungi al calendario
-                </a>
+            <div id="success-msg"
+                class="hidden mt-6 bg-stone-900 border-2 border-green-500 rounded-xl p-6 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+                <h3 class="text-4xl text-green-400 font-bold mb-2 animate-bounce">PRENOTATO! 🚀</h3>
+                <p class="text-xl text-gray-300 mb-6">Ci vediamo il 14 Febbraio!</p>
+
+                <p class="text-sm text-cyan-400 uppercase tracking-widest mb-4 font-bold">Salva gli appuntamenti:</p>
+
+                <div class="flex flex-col gap-4">
+                    <!-- Bottone Fitness -->
+                    <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=💪+Fitness+Masterclass+%2250+e+Squat%22&dates=20260214T173000/20260214T193000&details=Porta+cambio+e+asciugamano!+Presso+New+Iron+Club.&location=New+Iron+Club,+Via+Bolino+2/4,+Salerno"
+                        target="_blank"
+                        class="group relative w-full bg-slate-800 hover:bg-slate-700 text-white border border-cyan-500 font-bold py-3 px-4 rounded-lg shadow-lg flex items-center justify-between transition-all hover:scale-105">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🏋️</span>
+                            <div class="text-left leading-tight">
+                                <div class="text-cyan-300 text-lg">Fitness (17:30)</div>
+                                <div class="text-xs text-gray-400">Aggiungi al calendario</div>
+                            </div>
+                        </div>
+                        <span class="text-cyan-500 group-hover:translate-x-1 transition-transform">➜</span>
+                    </a>
+
+                    <!-- Bottone Games -->
+                    <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=🎲+Serata+Ludica+%22Max+Level+50%22&dates=20260214T200000/20260214T235900&details=Si+gioca+e+si+festeggia!+Presso+Ludoteca+Mirthy's.&location=Ludoteca+Mirthy's,+Via+Gelso+51,+Salerno"
+                        target="_blank"
+                        class="group relative w-full bg-slate-800 hover:bg-slate-700 text-white border border-pink-500 font-bold py-3 px-4 rounded-lg shadow-lg flex items-center justify-between transition-all hover:scale-105">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🎲</span>
+                            <div class="text-left leading-tight">
+                                <div class="text-pink-300 text-lg">Games (20:00)</div>
+                                <div class="text-xs text-gray-400">Aggiungi al calendario</div>
+                            </div>
+                        </div>
+                        <span class="text-pink-500 group-hover:translate-x-1 transition-transform">➜</span>
+                    </a>
+                </div>
             </div>
         </div>
 
