@@ -331,6 +331,27 @@
 
     </main>
 
+    <!-- Music Controls -->
+    <div class="fixed bottom-4 right-4 z-50">
+        <button id="music-btn"
+            class="bg-gray-800 text-white p-3 rounded-full shadow-lg border-2 border-pink-500 hover:scale-110 transition-transform hidden">
+            <svg id="music-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25a2.25 2.25 0 00-2.121-2.248l-12.068.75a2.25 2.25 0 00-2.062 2.248v9.112A2.25 2.25 0 004.87 14.2l1.636.468a1.803 1.803 0 11-.99 3.467l-2.31.66A2.25 2.25 0 011.605 16.6V7.935" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Hidden SoundCloud Widget -->
+    <iframe id="sc-widget" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+        src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/plasma3music/outrun-remix-splash-wave-remix-synthwave-retrowave-outrun&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"
+        style="display:none;">
+    </iframe>
+
+    <!-- SoundCloud Widget API -->
+    <script src="https://w.soundcloud.com/player/api.js"></script>
+
     <script>
         // --- CONFIGURAZIONE ---
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzdKAWGVHIwwlvlAV5u60a1nRbmrY4bsR1Zmc7rxjcl_0E7b1h_77thTgpgi0jAkncIjQ/exec";
@@ -502,14 +523,17 @@
             bar1: document.getElementById("bar-1"),
             text1: document.getElementById("text-1"),
             bar2: document.getElementById("bar-2"),
-            text2: document.getElementById("text-2")
+            text2: document.getElementById("text-2"),
+            musicBtn: document.getElementById("music-btn"),
+            musicIcon: document.getElementById("music-icon")
         };
 
         const state = {
             serverReady: false,
             availability: null,
             scratch1: 0,
-            scratch2: 0
+            scratch2: 0,
+            isPlaying: false
         };
 
         function updateFormVisibility() {
@@ -601,6 +625,59 @@
                 // Debug info
                 ui.debugStatus.innerHTML = `⚠️ <b>ATTENZIONE:</b> ${e.message}`;
                 ui.debugStatus.classList.remove("hidden");
+            }
+        }
+
+        // --- MUSIC PLAYER LOGIC ---
+        let scWidget;
+
+        function initAudio() {
+            const iframe = document.getElementById('sc-widget');
+            scWidget = SC.Widget(iframe);
+
+            ui.musicBtn.classList.remove("hidden");
+
+            // Tenta autoplay alla prima interazione
+            const startAudio = () => {
+                if (!state.isPlaying) {
+                    scWidget.play();
+                }
+                document.removeEventListener('click', startAudio);
+                document.removeEventListener('touchstart', startAudio);
+            };
+
+            document.addEventListener('click', startAudio);
+            document.addEventListener('touchstart', startAudio);
+
+            scWidget.bind(SC.Widget.Events.PLAY, () => {
+                state.isPlaying = true;
+                updateMusicBtn();
+            });
+
+            scWidget.bind(SC.Widget.Events.PAUSE, () => {
+                state.isPlaying = false;
+                updateMusicBtn();
+            });
+
+            ui.musicBtn.addEventListener("click", (e) => {
+                e.stopPropagation(); // Evita di triggerare startAudio
+                scWidget.toggle();
+            });
+        }
+
+        function updateMusicBtn() {
+            if (state.isPlaying) {
+                ui.musicBtn.classList.replace("bg-gray-800", "bg-pink-500");
+                ui.musicBtn.classList.add("animate-pulse");
+                ui.musicIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+                `; // Pause Icon
+            } else {
+                ui.musicBtn.classList.replace("bg-pink-500", "bg-gray-800");
+                ui.musicBtn.classList.remove("animate-pulse");
+                ui.musicIcon.innerHTML = `
+                   <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+                `; // Play Icon
             }
         }
 
@@ -701,6 +778,9 @@
 
             // Fetch info iniziali
             checkAvailability();
+
+            // Init Audio
+            initAudio();
         }
 
         if (document.readyState === 'loading') {
