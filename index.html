@@ -31,7 +31,9 @@
     <style>
         /* Stile 90s Fitness */
         @import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
         body {
             font-family: 'Teko', sans-serif;
@@ -183,6 +185,199 @@
             100% {
                 transform: translate(-50%, -50%) scale(1) rotate(-5deg);
             }
+        }
+
+        /* --- BONUS STAGE STYLES (MATCHING MAIN THEME) --- */
+        .arcade-wrapper {
+            font-family: 'Teko', sans-serif;
+            /* Ritorno al font principale */
+            color: #f0f0f0;
+            text-align: center;
+            margin-top: 3rem;
+            display: none;
+            animation: slideIn 1s ease-out;
+        }
+
+        .arcade-wrapper.visible {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Container stile Card ma più largo */
+        .bonus-container {
+            background-color: #1c1917;
+            border: 4px solid #fde047;
+            /* Giallo per distinguere il Bonus */
+            box-shadow: 0 0 20px #fde047, 0 0 30px #fde047 inset;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .bonus-title {
+            color: #fde047;
+            /* Yellow */
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            line-height: 1;
+            text-shadow: 0 0 10px #fde047;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .bonus-subtitle {
+            color: #a5f3fc;
+            /* Cyan */
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .gift-grid {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: 1fr;
+        }
+
+        @media(min-width: 768px) {
+            .gift-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .gift-card {
+            background: #262626;
+            border: 2px solid #52525b;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gift-card:hover {
+            transform: translateY(-5px);
+            border-color: #ec4899;
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+        }
+
+        .gift-card h3 {
+            color: #ec4899;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            line-height: 1.1;
+        }
+
+        .gift-icon-large {
+            font-size: 3rem;
+            margin: 1rem 0;
+            display: block;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+        }
+
+        .gift-desc {
+            font-size: 1.2rem;
+            color: #d1d5db;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        /* Reuse standard btn-neon but maybe a variation */
+        .btn-coin {
+            background-color: transparent;
+            color: #fde047;
+            border: 2px solid #fde047;
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-coin:hover {
+            background-color: #fde047;
+            color: #000;
+            box-shadow: 0 0 15px #fde047;
+        }
+
+        /* Modal Styled to match */
+        .custom-modal {
+            display: none;
+            position: fixed;
+            z-index: 200;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .custom-modal-content {
+            background-color: #1c1917;
+            border: 2px solid #ec4899;
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(236, 72, 153, 0.5);
+            font-family: 'Teko', sans-serif;
+            color: #fff;
+        }
+
+        .modal-input {
+            width: 100%;
+            background: #262626;
+            border: 2px solid #52525b;
+            color: #fff;
+            padding: 0.8rem;
+            font-family: inherit;
+            margin: 0.5rem 0 1.5rem 0;
+            text-align: center;
+            font-size: 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #ec4899;
+            box-shadow: 0 0 10px #ec4899;
+        }
+
+        .close-modal-x {
+            color: #71717a;
+            float: right;
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 0.5;
+        }
+
+        .close-modal-x:hover {
+            color: #fff;
         }
     </style>
 </head>
@@ -357,6 +552,111 @@
                 </div>
             </div>
         </div>
+
+        <!-- BONUS STAGE (RESTYLED) -->
+        <div id="bonus-stage" class="arcade-wrapper">
+            <div class="bonus-container">
+
+                <div class="bonus-title">Level 50 • Bonus Stage</div>
+
+                <div class="max-w-3xl mx-auto mb-8">
+                    <p class="text-2xl text-gray-300 leading-snug">
+                        La vostra presenza è il regalo più bello! 🎁<br>
+                        Tuttavia, se avete il piacere di contribuire a realizzare un sogno di Max, qui sotto trovate la
+                        sua <span class="text-yellow-300">Wishlist</span>.
+                    </p>
+                    <p class="text-lg text-gray-500 mt-2">
+                        (Ogni contributo è assolutamente opzionale e va nel "Salvadanaio dei Sogni")
+                    </p>
+                </div>
+
+                <div class="gift-grid">
+                    <!-- Meta Quest 3 -->
+                    <div class="gift-card">
+                        <h3>Meta Quest 3</h3>
+                        <span class="gift-icon-large">🥽</span>
+                        <p class="gift-desc">Visore VR 512GB<br>Per entrare nel Matrix</p>
+                        <button class="btn-coin" onclick="openPayment('Meta Quest 3')">Contribuisci</button>
+                    </div>
+
+                    <!-- Arcade Cabinet -->
+                    <div class="gift-card">
+                        <h3>Mortal Kombat II</h3>
+                        <span class="gift-icon-large">🕹️</span>
+                        <p class="gift-desc">Arcade Cabinet<br>Per la sala giochi</p>
+                        <button class="btn-coin" onclick="openPayment('Cabinato Arcade')">Contribuisci</button>
+                    </div>
+
+                    <!-- Flipper -->
+                    <div class="gift-card">
+                        <h3>Marvel Pinball</h3>
+                        <span class="gift-icon-large">🎰</span>
+                        <p class="gift-desc">Flipper Virtuale<br>Multiball Madness</p>
+                        <button class="btn-coin" onclick="openPayment('Flipper Marvel')">Contribuisci</button>
+                    </div>
+
+                    <!-- Legoland -->
+                    <div class="gift-card">
+                        <h3>Legoland Trip</h3>
+                        <span class="gift-icon-large">✈️🧱</span>
+                        <p class="gift-desc">Viaggio a Billund<br>Il gioco si fa duro</p>
+                        <button class="btn-coin" onclick="openPayment('Viaggio Legoland')">Contribuisci</button>
+                    </div>
+
+                    <!-- Delorean -->
+                    <div class="gift-card">
+                        <h3>Delorean Tour</h3>
+                        <span class="gift-icon-large">⚡🚗</span>
+                        <p class="gift-desc">Giro nella storia<br>Grande Giove!</p>
+                        <button class="btn-coin" onclick="openPayment('Giro Delorean')">Contribuisci</button>
+                    </div>
+
+                    <!-- Ubriacata -->
+                    <div class="gift-card">
+                        <h3>Drunk Mode</h3>
+                        <span class="gift-icon-large">🍻</span>
+                        <p class="gift-desc">Ubriacata Molesta<br>Offri un giro!</p>
+                        <button class="btn-coin" onclick="openPayment('Ubriacata Insieme')">Contribuisci</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; font-size: 1.2rem; opacity: 0.6;">
+                    Grazie di cuore ❤️
+                </div>
+            </div>
+        </div>
+
+        <!-- MODALE PAGAMENTO STYLED -->
+        <div id="arcadePayModal" class="custom-modal">
+            <div class="custom-modal-content">
+                <span class="close-modal-x" onclick="closeArcadeModal()">&times;</span>
+                <h2 class="text-3xl text-yellow-300 font-bold mb-2">CONTRIBUISCI</h2>
+                <p class="text-xl text-gray-300 mb-6">Regalo selezionato:<br><span id="modalGiftName"
+                        class="text-pink-500 font-bold text-2xl"></span></p>
+
+                <div style="text-align: left;">
+                    <label class="text-lg text-gray-400 block ml-1">Il tuo nome</label>
+                    <input type="text" id="pName" class="modal-input" placeholder="NOME">
+
+                    <label class="text-lg text-gray-400 block ml-1">Importo (€)</label>
+                    <input type="number" id="pAmount" class="modal-input" placeholder="20" value="20">
+                </div>
+
+                <div class="flex flex-col gap-3 mt-4">
+                    <button
+                        class="btn-neon w-full text-xl py-2 bg-blue-600 border-blue-400 text-white hover:bg-blue-500"
+                        onclick="confirmPay('paypal')">
+                        Regala con PayPal 💳
+                    </button>
+                    <button
+                        class="btn-neon w-full text-xl py-2 bg-yellow-600 border-yellow-400 text-white hover:bg-yellow-500"
+                        onclick="confirmPay('amazon')">
+                        Regala con Amazon 📦
+                    </button>
+                </div>
+            </div>
+        </div>
+
 
     </main>
 
@@ -634,6 +934,14 @@
                     ui.form.classList.add("hidden");
                     ui.success.classList.remove("hidden");
                     ui.globalStatus.classList.add("hidden");
+
+                    // Show Bonus Stage
+                    setTimeout(() => {
+                        document.getElementById('bonus-stage').classList.add('visible');
+                        // Scroll to bonus stage
+                        document.getElementById('bonus-stage').scrollIntoView({ behavior: 'smooth' });
+                    }, 1000);
+
                 } else throw new Error(data.message);
             } catch (e) {
                 ui.error.textContent = "ERRORE: " + e.message;
@@ -678,6 +986,68 @@
             // Unlock audio mobile
             document.body.addEventListener('touchstart', tryPlayAudio, { once: true });
             document.body.addEventListener('click', tryPlayAudio, { once: true });
+        }
+
+        // --- ARCADE LOGIC ---
+        const arcadeModal = document.getElementById("arcadePayModal");
+        const PAYPAL_BASE = "https://www.paypal.me/massimilianosabato/";
+        let currentGift = "";
+
+        function openPayment(giftName) {
+            currentGift = giftName;
+            document.getElementById("modalGiftName").innerText = giftName;
+            // Pre-fill name if available from main form
+            if (ui.name.value) {
+                document.getElementById('pName').value = ui.name.value;
+            }
+            arcadeModal.style.display = "flex";
+        }
+
+        function closeArcadeModal() {
+            arcadeModal.style.display = "none";
+        }
+
+        window.onclick = function (event) {
+            if (event.target == arcadeModal) closeArcadeModal();
+        }
+
+        async function confirmPay(method) {
+            const nome = document.getElementById("pName").value.trim();
+            let cifra = document.getElementById("pAmount").value.replace(',', '.');
+
+            if (!nome) { alert("INSERISCI IL NOME!"); return; }
+            if (!cifra || cifra <= 0) { alert("INSERISCI LA CIFRA!"); return; }
+
+            // 1. Send Notification to Backend (Telegram)
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'gift',
+                        name: nome,
+                        gift: currentGift,
+                        amount: cifra,
+                        method: method, // Track method in notification if useful later
+                        _t: Date.now()
+                    })
+                });
+            } catch (e) {
+                console.error("Errore notifica:", e);
+            }
+
+            // 2. Redirect Strategy
+            if (method === 'amazon') {
+                const amazonUrl = "https://amzn.eu/d/eYo2BKz";
+                alert(`HIGH SCORE SAVED!\nGrazie ${nome}, verrai reindirizzato su Amazon.\nAssicurati di usare l'email: massimilianosabato@hotmail.com`);
+                window.open(amazonUrl, '_blank');
+            } else {
+                const finalUrl = `${PAYPAL_BASE}${cifra}`;
+                alert(`HIGH SCORE SAVED!\nGrazie ${nome}, verrai reindirizzato a PayPal.`);
+                window.open(finalUrl, '_blank');
+            }
+
+            closeArcadeModal();
         }
 
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
