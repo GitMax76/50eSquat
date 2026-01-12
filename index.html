@@ -379,6 +379,70 @@
         .close-modal-x:hover {
             color: #fff;
         }
+
+        /* --- NEW SINGLE GIFT BOX STYLES --- */
+        .single-gift-box {
+            background: #262626;
+            border: 2px solid #a5f3fc;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(165, 243, 252, 0.2);
+        }
+
+        .floating-icons {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            font-size: 4rem;
+            flex-wrap: wrap;
+        }
+
+        .float-icon {
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(165, 243, 252, 0.5));
+        }
+
+        .float-icon:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        /* VR */
+        .float-icon:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        /* Plane */
+        .float-icon:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        /* Game */
+        .float-icon:nth-child(4) {
+            animation-delay: 1.5s;
+        }
+
+        /* Nerd */
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-15px) rotate(5deg);
+            }
+
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+        }
     </style>
 </head>
 
@@ -570,54 +634,27 @@
                     </p>
                 </div>
 
-                <div class="gift-grid">
-                    <!-- Meta Quest 3 -->
-                    <div class="gift-card">
-                        <h3>Meta Quest 3</h3>
-                        <span class="gift-icon-large">🥽</span>
-                        <p class="gift-desc">Visore VR 512GB<br>Per entrare nel Matrix</p>
-                        <button class="btn-coin" onclick="openPayment('Meta Quest 3')">Contribuisci</button>
+                <div class="single-gift-box">
+                    <p class="text-2xl text-gray-300 mb-4 font-bold uppercase tracking-wide">
+                        Scegli un regalo dalla Wishlist
+                    </p>
+
+                    <div class="floating-icons">
+                        <span class="float-icon" title="VR World">🥽</span>
+                        <span class="float-icon" title="Travel">✈️</span>
+                        <span class="float-icon" title="Arcade">🕹️</span>
+                        <span class="float-icon" title="Nerd Stuff">👾</span>
                     </div>
 
-                    <!-- Arcade Cabinet -->
-                    <div class="gift-card">
-                        <h3>Mortal Kombat II</h3>
-                        <span class="gift-icon-large">🕹️</span>
-                        <p class="gift-desc">Arcade Cabinet<br>Per la sala giochi</p>
-                        <button class="btn-coin" onclick="openPayment('Cabinato Arcade')">Contribuisci</button>
-                    </div>
+                    <p class="text-xl text-cyan-400 mb-6 leading-relaxed">
+                        Un unico grande salvadanaio per realizzare i sogni di Max.<br>
+                        Ogni contributo è gradito!
+                    </p>
 
-                    <!-- Flipper -->
-                    <div class="gift-card">
-                        <h3>Marvel Pinball</h3>
-                        <span class="gift-icon-large">🎰</span>
-                        <p class="gift-desc">Flipper Virtuale<br>Multiball Madness</p>
-                        <button class="btn-coin" onclick="openPayment('Flipper Marvel')">Contribuisci</button>
-                    </div>
-
-                    <!-- Legoland -->
-                    <div class="gift-card">
-                        <h3>Legoland Trip</h3>
-                        <span class="gift-icon-large">✈️🧱</span>
-                        <p class="gift-desc">Viaggio a Billund<br>Il gioco si fa duro</p>
-                        <button class="btn-coin" onclick="openPayment('Viaggio Legoland')">Contribuisci</button>
-                    </div>
-
-                    <!-- Delorean -->
-                    <div class="gift-card">
-                        <h3>Delorean Tour</h3>
-                        <span class="gift-icon-large">⚡🚗</span>
-                        <p class="gift-desc">Giro nella storia<br>Grande Giove!</p>
-                        <button class="btn-coin" onclick="openPayment('Giro Delorean')">Contribuisci</button>
-                    </div>
-
-                    <!-- Ubriacata -->
-                    <div class="gift-card">
-                        <h3>Drunk Mode</h3>
-                        <span class="gift-icon-large">🍻</span>
-                        <p class="gift-desc">Ubriacata Molesta<br>Offri un giro!</p>
-                        <button class="btn-coin" onclick="openPayment('Ubriacata Insieme')">Contribuisci</button>
-                    </div>
+                    <button class="btn-neon text-2xl px-10 py-4 w-full max-w-sm shadow-[0_0_20px_#ec4899]"
+                        onclick="openPayment('Contributo Wishlist')">
+                        CONTRIBUISCI 🎁
+                    </button>
                 </div>
 
                 <div style="margin-top: 30px; font-size: 1.2rem; opacity: 0.6;">
@@ -909,6 +946,7 @@
         }
 
         async function submitRSVP() {
+            playSfx('getready'); // Sound Effect
             ui.error.classList.add("hidden");
             const name = ui.name.value.trim();
             const ev1 = ui.check1.checked;
@@ -994,6 +1032,7 @@
         let currentGift = "";
 
         function openPayment(giftName) {
+            playSfx('coin'); // Sound Effect
             currentGift = giftName;
             document.getElementById("modalGiftName").innerText = giftName;
             // Pre-fill name if available from main form
@@ -1051,6 +1090,27 @@
         }
 
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+
+        // --- SOUND FX ---
+        const sfx = {
+            coin: new Audio('coin.mp3'),
+            getready: new Audio('getready.mp3')
+        };
+
+        // Preload
+        sfx.coin.volume = 0.5;
+        sfx.getready.volume = 0.6;
+
+        function playSfx(name) {
+            try {
+                if (sfx[name]) {
+                    sfx[name].currentTime = 0;
+                    sfx[name].play().catch(e => console.warn("Audio play blocked", e));
+                }
+            } catch (e) {
+                console.error("Audio error", e);
+            }
+        }
     </script>
 </body>
 
