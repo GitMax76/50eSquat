@@ -755,7 +755,40 @@
         </div>
 
 
+
+        <!-- MUSIC PROMO BOX (Hidden by default) -->
+        <!-- MUSIC PROMO BOX (ALWAYS VISIBLE) -->
+        <div id="music-promo-box" class="mt-12 mb-12 animate-slide-up">
+            <div
+                class="bg-zinc-900 border-4 border-pink-500 rounded-xl p-6 text-center shadow-[0_0_40px_rgba(236,72,153,0.4)] relative overflow-hidden">
+                <!-- Background decorative elements -->
+                <div
+                    class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10">
+                </div>
+
+                <h3 class="text-3xl text-yellow-300 font-bold mb-4 uppercase leading-none"
+                    style="text-shadow: 2px 2px 0 #ec4899;">
+                    Get Into The Spirit!
+                </h3>
+                <p class="text-xl text-cyan-300 mb-6">
+                    Inizia a entrare nel mood giusto con questa colonna sonora esclusiva! 🎵
+                </p>
+
+                <a href="music.html" target="_self"
+                    class="inline-block btn-neon text-2xl px-10 py-4 shadow-[0_0_20px_#ec4899] animate-pulse hover:scale-110 transition-transform">
+                    ▶ INIZIA
+                </a>
+            </div>
+        </div>
     </main>
+
+    <!-- Footer Links -->
+    <div class="text-center mt-6 mb-12">
+        <a href="regalo.html"
+            class="text-yellow-300 hover:text-white underline text-lg mx-2 opacity-70 hover:opacity-100 transition-opacity">
+            🎁 Vai solo alla pagina Regalo
+        </a>
+    </div>
 
     <!-- Music Controls -->
     <div class="fixed bottom-4 right-4 z-50">
@@ -1033,9 +1066,11 @@
                     ui.success.classList.remove("hidden");
                     ui.globalStatus.classList.add("hidden");
 
-                    // Show Bonus Stage
+                    // Show Bonus Stage & Music Box
                     setTimeout(() => {
                         document.getElementById('bonus-stage').classList.add('visible');
+                        document.getElementById('music-promo-box').classList.remove('hidden');
+
                         // Scroll to bonus stage
                         document.getElementById('bonus-stage').scrollIntoView({ behavior: 'smooth' });
                     }, 1000);
@@ -1135,18 +1170,30 @@
                 console.error("Errore notifica:", e);
             }
 
-            // 2. Redirect Strategy
+            // 2. Redirect Strategy (Delayed to show Music Box)
             if (method === 'amazon') {
                 const amazonUrl = "https://amzn.eu/d/eYo2BKz";
-                alert(`HIGH SCORE SAVED!\nGrazie ${nome}, verrai reindirizzato su Amazon.\nAssicurati di usare l'email: massimilianosabato@hotmail.com`);
+                // alert(`HIGH SCORE SAVED!\nGrazie ${nome}, verrai reindirizzato su Amazon.\nAssicurati di usare l'email: massimilianosabato@hotmail.com`);
                 window.open(amazonUrl, '_blank');
             } else {
                 const finalUrl = `${PAYPAL_BASE}${cifra}`;
-                alert(`HIGH SCORE SAVED!\nGrazie ${nome}, verrai reindirizzato a PayPal.`);
+                // alert(`HIGH SCORE SAVED!\nGrazie ${nome}, verrai reindirizzato a PayPal.`);
                 window.open(finalUrl, '_blank');
             }
 
             closeArcadeModal();
+
+            // Show Music Box Prominently after payment interaction
+            const musicBox = document.getElementById('music-promo-box');
+            musicBox.classList.remove('hidden');
+            musicBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Optional: Show a small toast/overlay saying "Grazie!"
+            const successMsg = document.createElement('div');
+            successMsg.className = "fixed top-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-black font-bold px-8 py-4 rounded-full shadow-2xl z-[300] text-xl animate-bounce";
+            successMsg.innerText = "GRAZIE PER IL CONTRIBUTO! 🎁";
+            document.body.appendChild(successMsg);
+            setTimeout(() => successMsg.remove(), 4000);
         }
 
         function revealBonus() {

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="it" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>50° Compleanno MAX - Colonna Sonora</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
+
+        body {
+            font-family: 'Teko', sans-serif;
+            background-color: #0c0a09;
+            color: #f0f0f0;
+            overflow: hidden;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- VAPORWAVE GRID BACKGROUND --- */
+        .retro-grid {
+            position: absolute;
+            bottom: -30%;
+            left: -50%;
+            width: 200%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(236, 72, 153, 0.6) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(236, 72, 153, 0.6) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            animation: moveGrid 5s linear infinite;
+            z-index: -1;
+            opacity: 0.6;
+            box-shadow: 0 0 100px rgba(236, 72, 153, 0.5) inset;
+        }
+
+        @keyframes moveGrid {
+            0% {
+                transform: perspective(500px) rotateX(60deg) translateY(0);
+            }
+
+            100% {
+                transform: perspective(500px) rotateX(60deg) translateY(50px);
+            }
+        }
+
+        /* --- CRT MONITOR EFFECT --- */
+        .crt-monitor {
+            background: #000;
+            border: 20px solid #27272a;
+            /* zinc-800 */
+            border-radius: 20px;
+            box-shadow:
+                0 0 0 5px #18181b,
+                /* zinc-900 */
+                0 0 50px rgba(165, 243, 252, 0.4);
+            position: relative;
+            padding: 2px;
+            max-width: 90%;
+            width: 800px;
+            aspect-ratio: 16/9;
+            overflow: hidden;
+        }
+
+        .crt-screen {
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+            /* inner curve */
+            position: relative;
+            overflow: hidden;
+            background: #111;
+        }
+
+        /* Scanlines */
+        .crt-screen::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 10;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* Tube curve shadow */
+        .crt-screen::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: radial-gradient(circle, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.5) 100%);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* --- TITLE --- */
+        .neon-title {
+            font-family: 'Permanent Marker', cursive;
+            font-size: clamp(2rem, 5vw, 4rem);
+            color: #fde047;
+            /* yellow */
+            text-shadow:
+                0 0 5px #fde047,
+                0 0 20px #ec4899,
+                0 0 40px #ec4899;
+            margin-bottom: 2rem;
+            animation: pulsate 2s infinite alternate;
+        }
+
+        @keyframes pulsate {
+            0% {
+                opacity: 0.8;
+                text-shadow: 0 0 10px #ec4899;
+            }
+
+            100% {
+                opacity: 1;
+                text-shadow: 0 0 20px #ec4899, 0 0 40px #a5f3fc;
+            }
+        }
+
+        .sun {
+            position: absolute;
+            top: 10%;
+            background: linear-gradient(to bottom, #fcd34d 0%, #ec4899 50%, #7c3aed 100%);
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            z-index: -2;
+            box-shadow: 0 0 60px #ec4899;
+            opacity: 0.8;
+        }
+
+        /* Cut the sun */
+        .sun-cut {
+            width: 100%;
+            height: 10%;
+            background-color: #0c0a09;
+            position: absolute;
+            left: 0;
+            z-index: -1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sun">
+        <!-- Stripes for retro sun effect if needed, simplistic gradient used above -->
+    </div>
+
+    <div class="retro-grid"></div>
+
+    <h1 class="neon-title">GET INTO THE VIBE</h1>
+
+    <div class="crt-monitor">
+        <!-- CRT SCREEN EFFECT -->
+        <div class="crt-screen relative" style="background: #000;">
+
+            <!-- BACKGROUND GIF (Reliable 90s Static/Glitch) -->
+            <img src="https://media1.tenor.com/m/K6Q7w7_qIaoAAAAC/static-tv.gif" alt="90s Static TV"
+                class="w-full h-full object-cover opacity-50 absolute top-0 left-0 z-0"
+                style="mix-blend-mode: color-dodge;">
+
+            <div class="absolute inset-0 bg-gradient-to-t from-pink-900 via-transparent to-cyan-900 opacity-40 z-0">
+            </div>
+
+            <!-- GOOGLE DRIVE PREVIEW IFRAME -->
+            <div class="absolute top-0 left-0 w-full h-full z-10 flex flex-col justify-end">
+                <iframe src="https://drive.google.com/file/d/18-x6W-IgnqnQIbrXzHY-D1gkMFQgdWF9/preview" width="100%"
+                    height="100" style="border:none; opacity: 1; filter: drop-shadow(0 0 10px cyan);" allow="autoplay">
+                </iframe>
+            </div>
+
+            <!-- OVERLAY TEXT -->
+            <div class="absolute top-8 left-1/2 transform -translate-x-1/2 text-center pointer-events-none z-20 w-full">
+                <h2 class="text-4xl text-white font-bold animate-pulse"
+                    style="font-family:'Press Start 2P'; text-shadow: 3px 3px 0px #ec4899;">
+                    PRESS PLAY
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="mt-4 text-center">
+        <p class="text-sm text-gray-400 mb-2 font-bold animate-pulse">
+            🎵 NOW PLAYING: MAX LEVEL 50 SOUNDTRACK 🎵
+        </p>
+        <p class="text-xs text-gray-600">
+            Premi play nel riquadro per avviare la musica.
+        </p>
+    </div>
+
+    <div class="mt-8 text-cyan-300 text-xl font-bold tracking-widest animate-pulse">
+        MAX LEVEL 50 • SOUNDTRACK
+    </div>
+
+    <div class="mt-4">
+        <a href="index.html" class="text-pink-500 hover:text-white underline text-lg mx-2">Torna alla Home</a>
+        <span class="text-gray-500">|</span>
+        <a href="regalo.html" class="text-yellow-300 hover:text-white underline text-lg mx-2">Vai al Regalo</a>
+    </div>
+
+</body>
+
+</html>
