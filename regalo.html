@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="it" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>50° Compleanno MAX - Regalo</title>
+
+    <!-- SEO & Social Sharing -->
+    <meta name="description" content="Lista desideri per il 50° Compleanno di Max!">
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://GitMax76.github.io/50eSquat/regalo.html">
+    <meta property="og:title" content="50° Compleanno MAX - Regalo">
+    <meta property="og:description" content="Lista desideri per il 50° Compleanno di Max!">
+    <meta property="og:image" content="https://GitMax76.github.io/50eSquat/BDpreview.png">
+
+    <!-- Carica Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stile 90s Fitness */
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        body {
+            font-family: 'Teko', sans-serif;
+            background-color: #0c0a09;
+            /* stone-950 */
+            color: #f0f0f0;
+            background-image:
+                linear-gradient(rgba(13, 165, 234, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(13, 165, 234, 0.3) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .btn-neon {
+            font-weight: 700;
+            letter-spacing: 2px;
+            background-color: #ec4899;
+            /* pink-500 */
+            color: #ffffff;
+            border: 2px solid #f9a8d4;
+            /* pink-200 */
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px #ec4899, 0 0 15px #ec4899;
+        }
+
+        .btn-neon:hover {
+            background-color: #f9a8d4;
+            color: #be185d;
+            box-shadow: 0 0 20px #f9a8d4, 0 0 30px #f9a8d4;
+            transform: scale(1.05);
+        }
+
+        input[type="text"] {
+            background-color: #262626;
+            border: 2px solid #a5f3fc;
+            color: #f0f0f0;
+            border-radius: 0.5rem;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            box-shadow: 0 0 10px #a5f3fc;
+        }
+
+        /* --- BONUS STAGE STYLES --- */
+        .arcade-wrapper {
+            font-family: 'Teko', sans-serif;
+            color: #f0f0f0;
+            text-align: center;
+            margin-top: 3rem;
+            animation: slideIn 1s ease-out;
+            /* Always visible on this page */
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Container stile Card ma più largo */
+        .bonus-container {
+            background-color: #1c1917;
+            border: 4px solid #fde047;
+            box-shadow: 0 0 20px #fde047, 0 0 30px #fde047 inset;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .bonus-title {
+            color: #fde047;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            line-height: 1;
+            text-shadow: 0 0 10px #fde047;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        /* Modal Styled to match */
+        .custom-modal {
+            display: none;
+            position: fixed;
+            z-index: 200;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .custom-modal-content {
+            background-color: #1c1917;
+            border: 2px solid #ec4899;
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(236, 72, 153, 0.5);
+            font-family: 'Teko', sans-serif;
+            color: #fff;
+        }
+
+        .modal-input {
+            width: 100%;
+            background: #262626;
+            border: 2px solid #52525b;
+            color: #fff;
+            padding: 0.8rem;
+            font-family: inherit;
+            margin: 0.5rem 0 1.5rem 0;
+            text-align: center;
+            font-size: 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #ec4899;
+            box-shadow: 0 0 10px #ec4899;
+        }
+
+        .close-modal-x {
+            color: #71717a;
+            float: right;
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 0.5;
+        }
+
+        .close-modal-x:hover {
+            color: #fff;
+        }
+
+        /* --- NEW SINGLE GIFT BOX STYLES --- */
+        .single-gift-box {
+            background: #262626;
+            border: 2px solid #a5f3fc;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(165, 243, 252, 0.2);
+        }
+
+        .floating-icons {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            font-size: 4rem;
+            flex-wrap: wrap;
+        }
+
+        .float-icon {
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(165, 243, 252, 0.5));
+        }
+
+        .float-icon:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .float-icon:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .float-icon:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        .float-icon:nth-child(4) {
+            animation-delay: 1.5s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-15px) rotate(5deg);
+            }
+
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+        }
+
+        /* Animation for OPZIONALE */
+        @keyframes pulse-opzionale {
+            0% {
+                color: #fde047;
+                transform: scale(1);
+            }
+
+            100% {
+                color: #ec4899;
+                transform: scale(1.15);
+            }
+        }
+
+        .opzionale-anim {
+            text-decoration: underline;
+            font-size: 1.2em;
+            font-weight: 900;
+            display: inline-block;
+            animation: pulse-opzionale 0.8s infinite alternate ease-in-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.6s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body class="min-h-full flex flex-col items-center justify-center p-4 overflow-x-hidden">
+
+    <header class="text-center mb-12 mt-8">
+        <h1 class="text-pink-400 mb-2 tracking-tighter font-bold"
+            style="font-size: clamp(3rem, 8vw, 6rem) !important; line-height: 1;">50° Compleanno MAX</h1>
+        <p class="text-cyan-400 text-3xl font-bold uppercase tracking-widest text-shadow-glow">Wishlist / Regalo</p>
+    </header>
+
+    <main class="w-full max-w-5xl">
+
+        <div id="bonus-stage" class="arcade-wrapper">
+            <div class="bonus-container">
+
+                <!-- TEASER BLOCK -->
+                <div id="bonus-teaser" class="text-center py-10">
+                    <p
+                        class="text-3xl md:text-4xl text-yellow-300 font-bold mb-8 uppercase tracking-wider drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                        Se vuoi contribuire al regalo di Max<br>clicca qui
+                    </p>
+                    <button id="btn-reveal-gift"
+                        class="btn-neon text-3xl px-12 py-5 shadow-[0_0_30px_#ec4899] animate-pulse hover:scale-110 transition-transform duration-300"
+                        onclick="revealBonus()">
+                        🎁 REGALO 🎁
+                    </button>
+                    <p class="mt-6 text-gray-500 italic">(Facoltativo)</p>
+                </div>
+
+                <!-- REAL CONTENT (Initially Hidden) -->
+                <div id="bonus-content-real" class="hidden">
+                    <div class="bonus-title">Level 50 • Bonus Stage</div>
+
+                    <div class="max-w-3xl mx-auto mb-8">
+                        <p class="text-2xl text-gray-300 leading-snug">
+                            La vostra presenza è il regalo più bello! 🎁<br>
+                            Tuttavia, se avete il piacere di contribuire a realizzare un sogno di Max, qui sotto trovate
+                            la
+                            sua <span class="text-yellow-300">Wishlist</span>.
+                        </p>
+                        <p class="text-lg text-gray-500 mt-2">
+                            <strong class="text-yellow-300">(Ogni contributo è assolutamente <span
+                                    class="opzionale-anim">FACOLTATIVO</span> e va nel "Salvadanaio
+                                dei Sogni")</strong>
+                        </p>
+                    </div>
+
+                    <div class="single-gift-box">
+                        <p class="text-2xl text-gray-300 mb-4 font-bold uppercase tracking-wide">
+                            Scegli un regalo dalla Wishlist
+                        </p>
+
+                        <div class="floating-icons">
+                            <span class="float-icon" title="VR World">🥽</span>
+                            <span class="float-icon" title="Travel">✈️</span>
+                            <span class="float-icon" title="Arcade">🕹️</span>
+                            <span class="float-icon" title="Nerd Stuff">👾</span>
+                        </div>
+
+                        <p class="text-xl text-cyan-400 mb-6 leading-relaxed">
+                            Un unico grande salvadanaio per realizzare i sogni di Max.<br>
+                            Ogni contributo è gradito!
+                        </p>
+
+                        <button class="btn-neon text-2xl px-10 py-4 w-full max-w-sm shadow-[0_0_20px_#ec4899]"
+                            onclick="openPayment('Contributo Wishlist')">
+                            CONTRIBUISCI 🎁
+                        </button>
+                    </div>
+
+                    <div style="margin-top: 30px; font-size: 1.2rem; opacity: 0.6;">
+                        Grazie di cuore ❤️
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- MODALE PAGAMENTO STYLED -->
+        <div id="arcadePayModal" class="custom-modal">
+            <div class="custom-modal-content">
+                <span class="close-modal-x" onclick="closeArcadeModal()">&times;</span>
+                <h2 class="text-3xl text-yellow-300 font-bold mb-2">CONTRIBUISCI</h2>
+                <p class="text-xl text-gray-300 mb-6">Regalo selezionato:<br><span id="modalGiftName"
+                        class="text-pink-500 font-bold text-2xl"></span></p>
+
+                <div style="text-align: left;">
+                    <label class="text-lg text-gray-400 block ml-1">Il tuo nome</label>
+                    <input type="text" id="pName" class="modal-input" placeholder="NOME">
+
+                    <label class="text-lg text-gray-400 block ml-1">Importo (€)</label>
+                    <input type="number" id="pAmount" class="modal-input" placeholder="20" value="20">
+                </div>
+
+                <div class="flex flex-col gap-3 mt-4">
+                    <button
+                        class="btn-neon w-full text-xl py-2 bg-blue-600 border-blue-400 text-white hover:bg-blue-500"
+                        onclick="confirmPay('paypal')">
+                        Regala con PayPal 💳
+                    </button>
+                    <button
+                        class="btn-neon w-full text-xl py-2 bg-yellow-600 border-yellow-400 text-white hover:bg-yellow-500"
+                        onclick="confirmPay('amazon')">
+                        Regala con Amazon 📦
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- CONFIGURAZIONE ---
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwpzqVqnci_gIxMOdJf6Ckf6lmnGI1Bxh9k1WYaXqop4DoFOY6ohZ4tLk8zREholj8PDA/exec";
+
+        // --- ARCADE LOGIC ---
+        const arcadeModal = document.getElementById("arcadePayModal");
+        const PAYPAL_BASE = "https://www.paypal.me/massimilianosabato/";
+        let currentGift = "";
+
+        function openPayment(giftName) {
+            playSfx('coin'); // Sound Effect
+            currentGift = giftName;
+            document.getElementById("modalGiftName").innerText = giftName;
+            arcadeModal.style.display = "flex";
+        }
+
+        function closeArcadeModal() {
+            arcadeModal.style.display = "none";
+        }
+
+        window.onclick = function (event) {
+            if (event.target == arcadeModal) closeArcadeModal();
+        }
+
+        async function confirmPay(method) {
+            const nome = document.getElementById("pName").value.trim();
+            let cifra = document.getElementById("pAmount").value.replace(',', '.');
+
+            if (!nome) { alert("INSERISCI IL NOME!"); return; }
+            if (!cifra || cifra <= 0) { alert("INSERISCI LA CIFRA!"); return; }
+
+            // 1. Send Notification to Backend (Telegram)
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'gift',
+                        name: nome,
+                        gift: currentGift,
+                        amount: cifra,
+                        method: method,
+                        _t: Date.now()
+                    })
+                });
+            } catch (e) {
+                console.error("Errore notifica:", e);
+            }
+
+            // 2. Redirect Strategy
+            if (method === 'amazon') {
+                const amazonUrl = "https://amzn.eu/d/eYo2BKz";
+                alert(`HIGH SCORE SAVED!\nGrazie ${nome}, verrai reindirizzato su Amazon.\nAssicurati di usare l'email: massimilianosabato@hotmail.com`);
+                window.open(amazonUrl, '_blank');
+            } else {
+                const finalUrl = `${PAYPAL_BASE}${cifra}`;
+                alert(`HIGH SCORE SAVED!\nGrazie ${nome}, verrai reindirizzato a PayPal.`);
+                window.open(finalUrl, '_blank');
+            }
+
+            closeArcadeModal();
+        }
+
+        function revealBonus() {
+            const teaser = document.getElementById('bonus-teaser');
+            const content = document.getElementById('bonus-content-real');
+
+            // Hide teaser
+            teaser.classList.add('hidden');
+
+            // Show content with animation
+            content.classList.remove('hidden');
+            content.classList.add('animate-slide-up');
+
+            playSfx('coin');
+        }
+
+        // --- SOUND FX ---
+        const sfx = {
+            coin: new Audio('coin.mp3'),
+        };
+        sfx.coin.volume = 0.5;
+
+        function playSfx(name) {
+            try {
+                if (sfx[name]) {
+                    sfx[name].currentTime = 0;
+                    sfx[name].play().catch(e => console.warn("Audio play blocked", e));
+                }
+            } catch (e) {
+                console.error("Audio error", e);
+            }
+        }
+    </script>
+</body>
+
+</html>
